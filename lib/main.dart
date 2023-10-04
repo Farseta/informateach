@@ -117,7 +117,7 @@ class LoginPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   )),
               child: const Text(
-                'Sign In',
+                'Login',
                 style: TextStyle(fontFamily: 'Quicksand', fontSize: 20),
               ),
             ),
@@ -335,7 +335,7 @@ class RegisterPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   )),
               child: const Text(
-                'Sign In',
+                'Register',
                 style: TextStyle(fontFamily: 'Quicksand', fontSize: 20),
               ),
             ),
@@ -372,92 +372,252 @@ class RegisterPage extends StatelessWidget {
 }
 
 // ignore: must_be_immutable
-class HomepageMahasiswa extends StatelessWidget {
-  List<Container> listDosen = [
-    Container(
-      margin: EdgeInsets.only(left: 41, right: 41),
-      height: 117,
-      color: Colors.black,
-    ),
+class HomepageMahasiswa extends StatefulWidget {
+  @override
+  _HomepageMahasiswaState createState() => _HomepageMahasiswaState();
+}
+
+class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
+  int _currentIndex = 0;
+  final List<Map<String, String>>listDosen=[
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 1",
+      "NIDM" : "NIDM Dosen 1",
+    },
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 2",
+      "NIDM" : "NIDM Dosen 2",
+    },
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 3",
+      "NIDM" : "NIDM Dosen 3",
+    },
+        {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 1",
+      "NIDM" : "NIDM Dosen 1",
+    },
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 2",
+      "NIDM" : "NIDM Dosen 2",
+    },
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 3",
+      "NIDM" : "NIDM Dosen 3",
+    },
+        {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 1",
+      "NIDM" : "NIDM Dosen 1",
+    },
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 2",
+      "NIDM" : "NIDM Dosen 2",
+    },
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 3",
+      "NIDM" : "NIDM Dosen 3",
+    },
+        {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 1",
+      "NIDM" : "NIDM Dosen 1",
+    },
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 2",
+      "NIDM" : "NIDM Dosen 2",
+    },
+    {
+      "Gambar" : "style/img/testDosen1.png",
+      "Nama" : "Nama Dosen 3",
+      "NIDM" : "NIDM Dosen 3",
+    },
   ];
-  HomepageMahasiswa({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SingleChildScrollView(
-      child: Center(
-        child: Column(
-          children: [
-            Stack(
-              children: [
-                Container(
-                    child: const Image(
-                  image: AssetImage("style/img/unesa-9_169.jpeg"),
-                )),
-                const Positioned(
-                    left: 20,
-                    top: 160,
-                    child: SizedBox(
-                      width: 337.49,
-                      height: 44.24,
-                      child: Text(
-                        'INFORMATEACH',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                          fontFamily: 'Quicksand',
-                          fontWeight: FontWeight.w700,
-                          height: 0,
-                        ),
-                      ),
-                    ))
-              ],
-            ),
-            const SizedBox(height: 15),
-            Container(
-              margin: const EdgeInsets.only(left: 26),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Daftar Dosen",
-                  style: TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600),
+    return MaterialApp(
+      home: Scaffold(
+        body: CustomScrollView(
+          slivers: <Widget>[
+            SliverAppBar(
+              backgroundColor: Color.fromRGBO(39, 55, 77, .40),
+              expandedHeight: 200.0,
+              floating: false,
+              pinned: true,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text('INFORMATEACH', style: TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  ),),
+                background: Image.asset(
+                  "style/img/unesa 2.png",
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
-            SizedBox(
-              width: 260,
-              height: 118,
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 8.67,
-                    top: 97.35,
-                    child: SizedBox(
-                      width: 242.67,
-                      height: 8.85,
-                      child: Text(
-                        'Ronggo Monggo S.pd',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontFamily: 'Newsreader',
-                          fontWeight: FontWeight.w400,
-                          height: 0,
-                        ),
-                      ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  final data = listDosen[index];
+                  if (index==0){
+                    return Column(
+                      children: [
+                      Container(margin: EdgeInsets.only(top: 10),
+                        child: Text("Daftar Dosen",style: TextStyle(
+                          fontFamily: 'Quicksand',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600
+                        ),),),
+                    Container(
+                    width: 285,
+                    height: 140,
+                    margin: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: Color.fromRGBO(82, 109, 130, .85),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromRGBO(0, 0, 0, .60),
+                          offset: Offset(0, 1),
+                          spreadRadius: 3,
+                          blurRadius: 7,
+                        )
+                      ],
                     ),
-                  ),
-                ],
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          data["Gambar"]!,
+                          width: 101,
+                          height: 138,
+                          fit: BoxFit.cover,
+                        ),
+                        SizedBox(width: 20),
+                        Center(
+                          child: Column(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(top: 38),
+                                child: Text(
+                                  data["Nama"]!,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontFamily: 'Quicksand',
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                data["NIDM"]!,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontFamily: 'Quicksand',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                    ],);
+                  }
+                  
+                  return Container(
+                    width: 260,
+                    height: 138,
+                    margin: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: Color.fromRGBO(82, 109, 130, .85),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromRGBO(0, 0, 0, .60),
+                          offset: Offset(0, 1),
+                          spreadRadius: 3,
+                          blurRadius: 7,
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          data["Gambar"]!,
+                          width: 101,
+                          height: 138,
+                          fit: BoxFit.cover,
+                        ),
+                        SizedBox(width: 20),
+                        Center(
+                          child: Column(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(top: 38),
+                                child: Text(
+                                  data["Nama"]!,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontFamily: 'Quicksand',
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                data["NIDM"]!,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontFamily: 'Quicksand',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                childCount: listDosen.length,
               ),
-            )
+            ),
           ],
         ),
-      ),
-    ));
+
+    bottomNavigationBar: BottomNavigationBar(
+      backgroundColor: Color.fromRGBO(39, 55, 77, 1),
+      currentIndex: _currentIndex,
+      items: [
+      BottomNavigationBarItem(icon: Icon(Icons.calendar_month, color: Colors.white,), label: "Schedule"),
+      BottomNavigationBarItem(icon: Icon(Icons.confirmation_number, color: Colors.white), label: "Tiket"),
+      BottomNavigationBarItem(icon: Icon(Icons.person, color: Colors.white), label: "Profile"),
+    ],
+    unselectedItemColor: Colors.white,
+    onTap: (index) {
+      setState(() {
+        _currentIndex = index;
+      });
+    },
+    ),
+
+  ));
+}
+}
+
+class profileMahasiswa extends StatelessWidget {
+  const profileMahasiswa({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }
