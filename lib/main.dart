@@ -1,3 +1,5 @@
+// ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api
+
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -105,8 +107,10 @@ class LoginPage extends StatelessWidget {
             const SizedBox(height: 15),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => MyAppMahasiswa()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const MyAppMahasiswa()));
               },
               style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.only(
@@ -376,8 +380,8 @@ class MyAppMahasiswaContainer extends StatelessWidget {
   const MyAppMahasiswaContainer({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: const MyAppMahasiswa(),
+    return const MaterialApp(
+      home: MyAppMahasiswa(),
     );
   }
 }
@@ -433,8 +437,8 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
               removeMargins: false,
               bottomBarWidth: 500,
               durationInMilliSeconds: 300,
-              bottomBarItems: [
-                const BottomBarItem(
+              bottomBarItems: const [
+                BottomBarItem(
                   inActiveItem: Icon(
                     Icons.calendar_month,
                     color: Colors.blueGrey,
@@ -445,7 +449,7 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
                   ),
                   itemLabel: 'Schedule',
                 ),
-                const BottomBarItem(
+                BottomBarItem(
                   inActiveItem: Icon(
                     Icons.confirmation_number,
                     color: Colors.blueGrey,
@@ -456,7 +460,7 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
                   ),
                   itemLabel: 'Ticket',
                 ),
-                const BottomBarItem(
+                BottomBarItem(
                   inActiveItem: Icon(
                     Icons.person,
                     color: Colors.blueGrey,
@@ -499,12 +503,12 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar(
-            backgroundColor: Color.fromRGBO(39, 55, 77, .40),
+            backgroundColor: const Color.fromRGBO(39, 55, 77, .40),
             expandedHeight: 200.0,
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(
+              title: const Text(
                 'INFORMATEACH',
                 style: TextStyle(
                   fontFamily: 'Quicksand',
@@ -526,8 +530,8 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                   return Column(
                     children: [
                       Container(
-                        margin: EdgeInsets.only(top: 10),
-                        child: Text(
+                        margin: const EdgeInsets.only(top: 10),
+                        child: const Text(
                           "Daftar Dosen",
                           style: TextStyle(
                               fontFamily: 'Quicksand',
@@ -540,12 +544,12 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         child: Container(
                           width: 285,
                           height: 140,
-                          margin: EdgeInsets.symmetric(
+                          margin: const EdgeInsets.symmetric(
                               horizontal: 50, vertical: 15),
                           decoration: BoxDecoration(
-                            color: Color.fromRGBO(82, 109, 130, .85),
+                            color: const Color.fromRGBO(82, 109, 130, .85),
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                 color: Color.fromRGBO(0, 0, 0, .60),
                                 offset: Offset(0, 1),
@@ -562,15 +566,15 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                                 height: 138,
                                 fit: BoxFit.cover,
                               ),
-                              SizedBox(width: 20),
+                              const SizedBox(width: 20),
                               Center(
                                 child: Column(
                                   children: [
                                     Container(
-                                      margin: EdgeInsets.only(top: 38),
+                                      margin: const EdgeInsets.only(top: 38),
                                       child: Text(
                                         data["Nama"]!,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 15,
                                           fontFamily: 'Quicksand',
@@ -579,7 +583,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                                     ),
                                     Text(
                                       data["NIDM"]!,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontFamily: 'Quicksand',
@@ -602,12 +606,12 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                       child: Container(
                         width: 160,
                         height: 138,
-                        margin: EdgeInsets.only(
+                        margin: const EdgeInsets.only(
                             top: 15, left: 50, bottom: 90, right: 50),
                         decoration: BoxDecoration(
-                          color: Color.fromRGBO(82, 109, 130, .85),
+                          color: const Color.fromRGBO(82, 109, 130, .85),
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                               color: Color.fromRGBO(0, 0, 0, .60),
                               offset: Offset(0, 1),
@@ -624,15 +628,15 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                               height: 138,
                               fit: BoxFit.cover,
                             ),
-                            SizedBox(width: 20),
+                            const SizedBox(width: 20),
                             Center(
                               child: Column(
                                 children: [
                                   Container(
-                                    margin: EdgeInsets.only(top: 38),
+                                    margin: const EdgeInsets.only(top: 38),
                                     child: Text(
                                       data["Nama"]!,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontFamily: 'Quicksand',
@@ -641,7 +645,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                                   ),
                                   Text(
                                     data["NIDM"]!,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 15,
                                       fontFamily: 'Quicksand',
@@ -661,12 +665,12 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                       child: Container(
                         width: 160,
                         height: 138,
-                        margin:
-                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 50, vertical: 15),
                         decoration: BoxDecoration(
-                          color: Color.fromRGBO(82, 109, 130, .85),
+                          color: const Color.fromRGBO(82, 109, 130, .85),
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                               color: Color.fromRGBO(0, 0, 0, .60),
                               offset: Offset(0, 1),
@@ -683,15 +687,15 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                               height: 138,
                               fit: BoxFit.cover,
                             ),
-                            SizedBox(width: 20),
+                            const SizedBox(width: 20),
                             Center(
                               child: Column(
                                 children: [
                                   Container(
-                                    margin: EdgeInsets.only(top: 38),
+                                    margin: const EdgeInsets.only(top: 38),
                                     child: Text(
                                       data["Nama"]!,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontFamily: 'Quicksand',
@@ -700,7 +704,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                                   ),
                                   Text(
                                     data["NIDM"]!,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 15,
                                       fontFamily: 'Quicksand',
@@ -749,8 +753,8 @@ class _ProfilePageState extends State<ProfilePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                    margin: EdgeInsets.only(left: 17.5, top: 100),
-                    child: Align(
+                    margin: const EdgeInsets.only(left: 17.5, top: 100),
+                    child: const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Nama",
@@ -760,23 +764,23 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     )),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 35),
+                  margin: const EdgeInsets.symmetric(horizontal: 35),
                   child: TextField(
                     controller: _nameController,
                     enabled: _isEditing,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Container(
-                    margin: EdgeInsets.symmetric(horizontal: 35),
-                    child: Align(
+                    margin: const EdgeInsets.symmetric(horizontal: 35),
+                    child: const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Nama",
@@ -786,23 +790,23 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     )),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 35),
+                  margin: const EdgeInsets.symmetric(horizontal: 35),
                   child: TextField(
                     controller: _nameController,
                     enabled: _isEditing,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Container(
-                    margin: EdgeInsets.symmetric(horizontal: 35),
-                    child: Align(
+                    margin: const EdgeInsets.symmetric(horizontal: 35),
+                    child: const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Nama",
@@ -812,23 +816,23 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     )),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 35),
+                  margin: const EdgeInsets.symmetric(horizontal: 35),
                   child: TextField(
                     controller: _nameController,
                     enabled: _isEditing,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Container(
-                    margin: EdgeInsets.symmetric(horizontal: 35),
-                    child: Align(
+                    margin: const EdgeInsets.symmetric(horizontal: 35),
+                    child: const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Nama",
@@ -838,20 +842,20 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     )),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 35),
+                  margin: const EdgeInsets.symmetric(horizontal: 35),
                   child: TextField(
                     controller: _nameController,
                     enabled: _isEditing,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     setState(() {
