@@ -1,3 +1,4 @@
+import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -379,238 +380,293 @@ class HomepageMahasiswa extends StatefulWidget {
 
 class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
   int _currentIndex = 0;
-  final List<Map<String, String>>listDosen=[
+  final List<Map<String, String>> listDosen = [
     {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 1",
-      "NIDM" : "NIDM Dosen 1",
-    },
-    {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 2",
-      "NIDM" : "NIDM Dosen 2",
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 1",
+      "NIDM": "NIDM Dosen 1",
     },
     {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 3",
-      "NIDM" : "NIDM Dosen 3",
-    },
-        {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 1",
-      "NIDM" : "NIDM Dosen 1",
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 2",
+      "NIDM": "NIDM Dosen 2",
     },
     {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 2",
-      "NIDM" : "NIDM Dosen 2",
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 3",
+      "NIDM": "NIDM Dosen 3",
     },
     {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 3",
-      "NIDM" : "NIDM Dosen 3",
-    },
-        {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 1",
-      "NIDM" : "NIDM Dosen 1",
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 1",
+      "NIDM": "NIDM Dosen 1",
     },
     {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 2",
-      "NIDM" : "NIDM Dosen 2",
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 2",
+      "NIDM": "NIDM Dosen 2",
     },
     {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 3",
-      "NIDM" : "NIDM Dosen 3",
-    },
-        {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 1",
-      "NIDM" : "NIDM Dosen 1",
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 3",
+      "NIDM": "NIDM Dosen 3",
     },
     {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 2",
-      "NIDM" : "NIDM Dosen 2",
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 1",
+      "NIDM": "NIDM Dosen 1",
     },
     {
-      "Gambar" : "style/img/testDosen1.png",
-      "Nama" : "Nama Dosen 3",
-      "NIDM" : "NIDM Dosen 3",
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 2",
+      "NIDM": "NIDM Dosen 2",
+    },
+    {
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 3",
+      "NIDM": "NIDM Dosen 3",
+    },
+    {
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 1",
+      "NIDM": "NIDM Dosen 1",
+    },
+    {
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 2",
+      "NIDM": "NIDM Dosen 2",
+    },
+    {
+      "Gambar": "style/img/testDosen1.png",
+      "Nama": "Nama Dosen 3",
+      "NIDM": "NIDM Dosen 3",
     },
   ];
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        body: CustomScrollView(
-          slivers: <Widget>[
-            SliverAppBar(
-              backgroundColor: Color.fromRGBO(39, 55, 77, .40),
-              expandedHeight: 200.0,
-              floating: false,
-              pinned: true,
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text('INFORMATEACH', style: TextStyle(
+        home: Scaffold(
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+            backgroundColor: Color.fromRGBO(39, 55, 77, .40),
+            expandedHeight: 200.0,
+            floating: false,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                'INFORMATEACH',
+                style: TextStyle(
                   fontFamily: 'Quicksand',
                   fontSize: 25,
                   fontWeight: FontWeight.bold,
-                  ),),
-                background: Image.asset(
-                  "style/img/unesa 2.png",
-                  fit: BoxFit.cover,
                 ),
               ),
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  final data = listDosen[index];
-                  if (index==0){
-                    return Column(
-                      children: [
-                      Container(margin: EdgeInsets.only(top: 10),
-                        child: Text("Daftar Dosen",style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600
-                        ),),),
-                    Container(
-                    width: 285,
-                    height: 140,
-                    margin: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(82, 109, 130, .85),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, .60),
-                          offset: Offset(0, 1),
-                          spreadRadius: 3,
-                          blurRadius: 7,
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Image.asset(
-                          data["Gambar"]!,
-                          width: 101,
-                          height: 138,
-                          fit: BoxFit.cover,
-                        ),
-                        SizedBox(width: 20),
-                        Center(
-                          child: Column(
-                            children: [
-                              Container(
-                                margin: EdgeInsets.only(top: 38),
-                                child: Text(
-                                  data["Nama"]!,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontFamily: 'Quicksand',
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                data["NIDM"]!,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontFamily: 'Quicksand',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                    ],);
-                  }
-                  
-                  return Container(
-                    width: 260,
-                    height: 138,
-                    margin: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(82, 109, 130, .85),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, .60),
-                          offset: Offset(0, 1),
-                          spreadRadius: 3,
-                          blurRadius: 7,
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Image.asset(
-                          data["Gambar"]!,
-                          width: 101,
-                          height: 138,
-                          fit: BoxFit.cover,
-                        ),
-                        SizedBox(width: 20),
-                        Center(
-                          child: Column(
-                            children: [
-                              Container(
-                                margin: EdgeInsets.only(top: 38),
-                                child: Text(
-                                  data["Nama"]!,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontFamily: 'Quicksand',
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                data["NIDM"]!,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontFamily: 'Quicksand',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                childCount: listDosen.length,
+              background: Image.asset(
+                "style/img/unesa 2.png",
+                fit: BoxFit.cover,
               ),
             ),
-          ],
-        ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                final data = listDosen[index];
+                if (index == 0) {
+                  return Column(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(top: 10),
+                        child: Text(
+                          "Daftar Dosen",
+                          style: TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Container(
+                        width: 285,
+                        height: 140,
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(82, 109, 130, .85),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color.fromRGBO(0, 0, 0, .60),
+                              offset: Offset(0, 1),
+                              spreadRadius: 3,
+                              blurRadius: 7,
+                            )
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              data["Gambar"]!,
+                              width: 101,
+                              height: 138,
+                              fit: BoxFit.cover,
+                            ),
+                            SizedBox(width: 20),
+                            Center(
+                              child: Column(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.only(top: 38),
+                                    child: Text(
+                                      data["Nama"]!,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontFamily: 'Quicksand',
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    data["NIDM"]!,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontFamily: 'Quicksand',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  );
+                }
 
-    bottomNavigationBar: BottomNavigationBar(
-      backgroundColor: Color.fromRGBO(39, 55, 77, 1),
-      currentIndex: _currentIndex,
-      items: [
-      BottomNavigationBarItem(icon: Icon(Icons.calendar_month, color: Colors.white,), label: "Schedule"),
-      BottomNavigationBarItem(icon: Icon(Icons.confirmation_number, color: Colors.white), label: "Tiket"),
-      BottomNavigationBarItem(icon: Icon(Icons.person, color: Colors.white), label: "Profile"),
-    ],
-    unselectedItemColor: Colors.white,
-    onTap: (index) {
-      setState(() {
-        _currentIndex = index;
-      });
-    },
-    ),
+                return Container(
+                  width: 260,
+                  height: 138,
+                  margin: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(82, 109, 130, .85),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, .60),
+                        offset: Offset(0, 1),
+                        spreadRadius: 3,
+                        blurRadius: 7,
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        data["Gambar"]!,
+                        width: 101,
+                        height: 138,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(width: 20),
+                      Center(
+                        child: Column(
+                          children: [
+                            Container(
+                              margin: EdgeInsets.only(top: 38),
+                              child: Text(
+                                data["Nama"]!,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontFamily: 'Quicksand',
+                                ),
+                              ),
+                            ),
+                            Text(
+                              data["NIDM"]!,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontFamily: 'Quicksand',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              childCount: listDosen.length,
+            ),
+          ),
+        ],
+      ),
+      // bottomNavigationBar: AnimatedNotchBottomBar(
+      //     notchBottomBarController: _controller,
+      //     bottomBarItems: [
+      //       const BottomBarItem(
+      //         inActiveItem: Icon(
+      //           Icons.home_filled,
+      //           color: Colors.blueGrey,
+      //         ),
+      //         activeItem: Icon(
+      //           Icons.home_filled,
+      //           color: Colors.blueAccent,
+      //         ),
+      //         itemLabel: 'Page 1',
+      //       ),
+      //       const BottomBarItem(
+      //         inActiveItem: Icon(
+      //           Icons.star,
+      //           color: Colors.blueGrey,
+      //         ),
+      //         activeItem: Icon(
+      //           Icons.star,
+      //           color: Colors.blueAccent,
+      //         ),
+      //         itemLabel: 'Page 2',
+      //       ),
 
-  ));
-}
+      //       ///svg item
+      //       BottomBarItem(
+      //         inActiveItem: SvgPicture.asset(
+      //           'assets/search_icon.svg',
+      //           color: Colors.blueGrey,
+      //         ),
+      //         activeItem: SvgPicture.asset(
+      //           'assets/search_icon.svg',
+      //           color: Colors.black,
+      //         ),
+      //         itemLabel: 'Page 3',
+      //       ),
+      //     ])
+
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Color.fromRGBO(39, 55, 77, 1),
+        currentIndex: _currentIndex,
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.calendar_month,
+                color: Colors.white,
+              ),
+              label: "Schedule"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.confirmation_number, color: Colors.white),
+              label: "Tiket"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person, color: Colors.white), label: "Profile"),
+        ],
+        unselectedItemColor: Colors.white,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
+    ));
+  }
 }
 
 class profileMahasiswa extends StatelessWidget {
