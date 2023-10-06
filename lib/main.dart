@@ -3,6 +3,13 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 
+Map userNow = {
+  "Gambar": "style/img/testUser/png",
+  "Nama": "Christiano Zetro AB Sinaga",
+  "Phone": "123456789123",
+  "Gender": "Pria",
+};
+
 void main() {
   runApp(const MyApp());
 }
@@ -110,7 +117,9 @@ class LoginPage extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MyAppMahasiswa()));
+                        builder: (context) => const MyAppMahasiswa(
+                              initialPage: 0,
+                            )));
               },
               style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.only(
@@ -381,13 +390,16 @@ class MyAppMahasiswaContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: MyAppMahasiswa(),
+      home: MyAppMahasiswa(
+        initialPage: 0,
+      ),
     );
   }
 }
 
 class MyAppMahasiswa extends StatefulWidget {
-  const MyAppMahasiswa({super.key});
+  final int initialPage;
+  const MyAppMahasiswa({Key? key, required this.initialPage}) : super(key: key);
 
   @override
   State<MyAppMahasiswa> createState() => _MyAppMahasiswaState();
@@ -395,10 +407,17 @@ class MyAppMahasiswa extends StatefulWidget {
 
 class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
   /// Controller to handle PageView and also handles initial page
-  final _pageController = PageController(initialPage: 0);
+  late final PageController _pageController;
 
   /// Controller to handle bottom nav bar and also handles initial page
-  final _controller = NotchBottomBarController(index: 0);
+  late final NotchBottomBarController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.initialPage);
+    _controller = NotchBottomBarController(index: widget.initialPage);
+  }
 
   int maxCount = 3;
 
@@ -411,8 +430,8 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
   /// widget list
   final List<Widget> bottomBarPages = [
     HomepageMahasiswa(),
+    const TicketMahasiswaPageContainer(),
     ProfilePage(),
-    const Page3(),
   ];
 
   @override
@@ -420,21 +439,16 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
         children: List.generate(
             bottomBarPages.length, (index) => bottomBarPages[index]),
       ),
       extendBody: true,
       bottomNavigationBar: (bottomBarPages.length <= maxCount)
           ? AnimatedNotchBottomBar(
-              /// Provide NotchBottomBarController
               notchBottomBarController: _controller,
               color: Colors.white,
               showLabel: true,
               notchColor: Colors.black87,
-
-              /// restart app if you change removeMargins
-              removeMargins: false,
               bottomBarWidth: 500,
               durationInMilliSeconds: 300,
               bottomBarItems: const [
@@ -529,14 +543,17 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 if (index == 0) {
                   return Column(
                     children: [
-                      Container(
-                        margin: const EdgeInsets.only(top: 10),
-                        child: const Text(
-                          "Daftar Dosen",
-                          style: TextStyle(
-                              fontFamily: 'Quicksand',
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 19, left: 20),
+                          child: const Text(
+                            "Daftar Dosen",
+                            style: TextStyle(
+                                fontFamily: 'Quicksand',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
                       GestureDetector(
@@ -547,7 +564,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                           margin: const EdgeInsets.symmetric(
                               horizontal: 50, vertical: 15),
                           decoration: BoxDecoration(
-                            color: const Color.fromRGBO(82, 109, 130, .85),
+                            color: const Color.fromRGBO(39, 55, 77, 1),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: const [
                               BoxShadow(
@@ -609,7 +626,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         margin: const EdgeInsets.only(
                             top: 15, left: 50, bottom: 90, right: 50),
                         decoration: BoxDecoration(
-                          color: const Color.fromRGBO(82, 109, 130, .85),
+                          color: const Color.fromRGBO(39, 55, 77, 1),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: const [
                             BoxShadow(
@@ -668,7 +685,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         margin: const EdgeInsets.symmetric(
                             horizontal: 50, vertical: 15),
                         decoration: BoxDecoration(
-                          color: const Color.fromRGBO(82, 109, 130, .85),
+                          color: const Color.fromRGBO(39, 55, 77, 1),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: const [
                             BoxShadow(
@@ -733,154 +750,749 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late TextEditingController _nameController;
-  bool _isEditing = false;
+  late TextEditingController _nameController,
+      _phoneController,
+      _genderController;
+  // late TextEditingController _phoneController;
+  final bool _isEditing = false;
 
   @override
   void initState() {
     super.initState();
     // Inisialisasi controller dengan nilai dari database atau sesuai kebutuhan
-    _nameController = TextEditingController(text: 'NAMA USER DARI DATABASE');
+    _nameController = TextEditingController(text: userNow["Nama"]!);
+    _phoneController = TextEditingController(text: userNow["Phone"]!);
+    _genderController = TextEditingController(text: userNow["Gender"]!);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
         body: SingleChildScrollView(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                    margin: const EdgeInsets.only(left: 17.5, top: 100),
-                    child: const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Nama",
-                        style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 17,
-                        ),
-                      ),
-                    )),
-                const SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 35),
-                  child: TextField(
-                    controller: _nameController,
-                    enabled: _isEditing,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+              margin: const EdgeInsets.only(left: 14, top: 11),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Image.asset('style/img/logoInformateach.png'),
+              )),
+          Container(
+            margin: const EdgeInsets.only(top: 44),
+            child: ClipOval(
+                child: Image.asset(
+              'style/img/testUser.png',
+              height: 180,
+            )),
+          ),
+
+          //Name User Container
+          Container(
+              margin: const EdgeInsets.only(left: 28, top: 45),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Name",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
                   ),
                 ),
-                const SizedBox(height: 20),
-                Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 35),
-                    child: const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Nama",
-                        style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 17,
-                        ),
-                      ),
-                    )),
-                const SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 35),
-                  child: TextField(
-                    controller: _nameController,
-                    enabled: _isEditing,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 35),
-                    child: const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Nama",
-                        style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 17,
-                        ),
-                      ),
-                    )),
-                const SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 35),
-                  child: TextField(
-                    controller: _nameController,
-                    enabled: _isEditing,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 35),
-                    child: const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Nama",
-                        style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 17,
-                        ),
-                      ),
-                    )),
-                const SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 35),
-                  child: TextField(
-                    controller: _nameController,
-                    enabled: _isEditing,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      if (_isEditing) {
-                        // Simpan ke database atau lakukan tindakan lain
-                        print('Nilai disimpan: ${_nameController.text}');
-                      }
-                      _isEditing = !_isEditing;
-                    });
-                  },
-                  child: Text(_isEditing ? 'Save' : 'Edit'),
-                ),
-              ],
+              )),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 22),
+            child: TextField(
+              controller: _nameController,
+              enabled: _isEditing,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
             ),
           ),
-        ));
+
+          //Phone Number Container
+          const SizedBox(
+            height: 15,
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 28),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Phone Number",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              )),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 22),
+            child: TextField(
+              controller: _phoneController,
+              enabled: _isEditing,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+
+          //Gender User Container
+          const SizedBox(
+            height: 15,
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 28),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Gender",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              )),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 22),
+            child: TextField(
+              controller: _genderController,
+              enabled: _isEditing,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 68,
+          ),
+
+          //Log Out Button and Edit Profile Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const MyAppMahasiswa(
+                              initialPage: 1,
+                            ))),
+                style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(115, 45),
+                    backgroundColor: const Color.fromRGBO(82, 109, 130, 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    )),
+                child: const Text(
+                  "Edit Profile",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => LoginPage())),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(115, 45),
+                  backgroundColor: const Color.fromRGBO(39, 55, 77, 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
+                child: const Text(
+                  "Log Out",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    ));
   }
 }
 
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
+class TicketMahasiswaPageContainer extends StatelessWidget {
+  const TicketMahasiswaPageContainer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: Colors.red, child: const Center(child: Text('Page 3')));
+    return const MaterialApp(
+      home: TicketMahasiswaPage(),
+    );
+  }
+}
+
+class TicketMahasiswaPage extends StatefulWidget {
+  const TicketMahasiswaPage({super.key});
+
+  @override
+  State<TicketMahasiswaPage> createState() => _TicketMahasiswaPageState();
+}
+
+class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
+  final List<Map<String, dynamic>> listTicket = [
+    for (int i = 5; i <= 6; i++)
+      {
+        "Id": "ID Tiket $i",
+        "Dosen": "Dosen Tiket $i",
+        "Tanggal": "3 October 2023",
+        "Jam": "10.00",
+        "Tujuan": "Tujuan Pertemuan Tiket $i",
+        "Gambar": "style/img/testDosen1.png",
+      }
+  ];
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView.builder(
+        itemCount: listTicket.length,
+        itemBuilder: ((context, index) {
+          final data = listTicket[index];
+          if (index == 0) {
+            return Column(
+              children: [
+                Container(
+                  width: 458,
+                  height: 75,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x3F000000),
+                        offset: Offset(0, 4),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                      ),
+                    ],
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    MyAppMahasiswa(initialPage: 1))),
+                        child: Text(
+                          "AVAILABLE",
+                          style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Image.asset("style/img/Line 2.png"),
+                      GestureDetector(
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Page1())),
+                        child: Text(
+                          "HISTORY",
+                          style: TextStyle(
+                            color: Colors.black.withOpacity(0.2),
+                            fontSize: 20,
+                            fontFamily: 'Quicksand',
+                            fontWeight: FontWeight.w700,
+                            height: 0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                //Tiket Container
+                Container(
+                  width: 338,
+                  height: 123,
+                  decoration: ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    color: Colors.white,
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x3F000000),
+                        offset: Offset(0, 4),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  margin: EdgeInsets.only(left: 11, right: 11, top: 14),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        data["Gambar"]!,
+                        height: 112,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(
+                        width: 17,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 33),
+                          Text(
+                            data["Dosen"]!,
+                            style: TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "${data["Tanggal"]}, ${data["Jam"]}",
+                            style: TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontSize: 10,
+                            ),
+                          ),
+                          Text(
+                            "${data["Tujuan"]}",
+                            style: TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontSize: 10,
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      minimumSize: Size(70, 15),
+                                      padding: EdgeInsets.all(0),
+                                      backgroundColor:
+                                          Color.fromRGBO(39, 55, 77, 1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                      )),
+                                  onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => Page1()),
+                                      ),
+                                  child: Text(
+                                    "Verification",
+                                    style: TextStyle(
+                                      fontFamily: 'Quicksand',
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )),
+                              SizedBox(
+                                width: 58,
+                              ),
+                              ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      minimumSize: Size(70, 15),
+                                      padding: EdgeInsets.all(0),
+                                      backgroundColor:
+                                          Color.fromRGBO(39, 55, 77, 1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                      )),
+                                  onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => Page1()),
+                                      ),
+                                  child: Text(
+                                    "Cancel",
+                                    style: TextStyle(
+                                      fontFamily: 'Quicksand',
+                                      color: Colors.red,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )),
+                            ],
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+          return Column(
+            children: [
+              Container(
+                width: 338,
+                height: 123,
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  color: Colors.white,
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x3F000000),
+                      offset: Offset(0, 4),
+                      spreadRadius: 0,
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                margin: EdgeInsets.only(left: 11, right: 11, top: 14),
+                child: Row(
+                  children: [
+                    Image.asset(
+                      data["Gambar"]!,
+                      height: 112,
+                      fit: BoxFit.cover,
+                    ),
+                    SizedBox(
+                      width: 17,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 33),
+                        Text(
+                          data["Dosen"]!,
+                          style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "${data["Tanggal"]}, ${data["Jam"]}",
+                          style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 10,
+                          ),
+                        ),
+                        Text(
+                          "${data["Tujuan"]}",
+                          style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 10,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(70, 15),
+                                    padding: EdgeInsets.all(0),
+                                    backgroundColor:
+                                        Color.fromRGBO(39, 55, 77, 1),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    )),
+                                onPressed: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Page1()),
+                                    ),
+                                child: Text(
+                                  "Verification",
+                                  style: TextStyle(
+                                    fontFamily: 'Quicksand',
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )),
+                            SizedBox(
+                              width: 58,
+                            ),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(70, 15),
+                                    padding: EdgeInsets.all(0),
+                                    backgroundColor:
+                                        Color.fromRGBO(39, 55, 77, 1),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    )),
+                                onPressed: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Page1()),
+                                    ),
+                                child: Text(
+                                  "Cancel",
+                                  style: TextStyle(
+                                    fontFamily: 'Quicksand',
+                                    color: Colors.red,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )),
+                          ],
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+}
+
+////PAGE TEST/////
+class Page1 extends StatelessWidget {
+  final List<Map<String, dynamic>> listTicket = [
+    for (int i = 1; i <= 2; i++)
+      {
+        "Id": "ID Tiket $i",
+        "Dosen": "Dosen Tiket $i",
+        "Tanggal": "3 October 2023",
+        "Jam": "10.00",
+        "Tujuan": "Tujuan Pertemuan Tiket $i",
+        "Gambar": "style/img/testDosen1.png",
+        "Status": "Success",
+      },
+    for (int i = 3; i <= 4; i++)
+      {
+        "Id": "ID Tiket $i",
+        "Dosen": "Dosen Tiket $i",
+        "Tanggal": "3 October 2023",
+        "Jam": "10.00",
+        "Tujuan": "Tujuan Pertemuan Tiket $i",
+        "Gambar": "style/img/testDosen1.png",
+        "Status": "Not Verified",
+      }
+  ];
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView.builder(
+        itemCount: listTicket.length,
+        itemBuilder: ((context, index) {
+          final data = listTicket[index];
+          if (index == 0) {
+            return Column(
+              children: [
+                Container(
+                  width: 458,
+                  height: 75,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x3F000000),
+                        offset: Offset(0, 4),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                      ),
+                    ],
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    MyAppMahasiswa(initialPage: 1))),
+                        child: Text(
+                          "AVAILABLE",
+                          style: TextStyle(
+                            color: Colors.black.withOpacity(0.2),
+                            fontFamily: 'Quicksand',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Image.asset("style/img/Line 2.png"),
+                      GestureDetector(
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Page1())),
+                        child: Text(
+                          "HISTORY",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: 'Quicksand',
+                            fontWeight: FontWeight.w700,
+                            height: 0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                //Tiket Container
+                Container(
+                  width: 338,
+                  height: 123,
+                  decoration: ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    color: Colors.white,
+                    shadows: [
+                      BoxShadow(
+                        color: Color(0x3F000000),
+                        offset: Offset(0, 4),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  margin: EdgeInsets.only(left: 11, right: 11, top: 14),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        data["Gambar"]!,
+                        height: 112,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(
+                        width: 17,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 33),
+                          Text(
+                            data["Dosen"]!,
+                            style: TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "${data["Tanggal"]}, ${data["Jam"]}",
+                            style: TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontSize: 10,
+                            ),
+                          ),
+                          Text(
+                            "${data["Tujuan"]}",
+                            style: TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontSize: 10,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 19,
+                          ),
+                          Container(
+                            width: 200,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              data["Status"],
+                              style: TextStyle(
+                                  color: data["Status"] == "Success"
+                                      ? Color(0xFF0165FC)
+                                      : Color(0xFFFF0000),
+                                  fontFamily: 'Quicksand',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+          return Column(
+            children: [
+              Container(
+                width: 338,
+                height: 123,
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  color: Colors.white,
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x3F000000),
+                      offset: Offset(0, 4),
+                      spreadRadius: 0,
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                margin: EdgeInsets.only(left: 11, right: 11, top: 14),
+                child: Row(
+                  children: [
+                    Image.asset(
+                      data["Gambar"]!,
+                      height: 112,
+                      fit: BoxFit.cover,
+                    ),
+                    SizedBox(
+                      width: 17,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 33),
+                        Text(
+                          data["Dosen"]!,
+                          style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "${data["Tanggal"]}, ${data["Jam"]}",
+                          style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 10,
+                          ),
+                        ),
+                        Text(
+                          "${data["Tujuan"]}",
+                          style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 10,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 19,
+                        ),
+                        Container(
+                          width: 200,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            data["Status"],
+                            style: TextStyle(
+                                color: data["Status"] == "Success"
+                                    ? Color(0xFF0165FC)
+                                    : Color(0xFFFF0000),
+                                fontFamily: 'Quicksand',
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
   }
 }
