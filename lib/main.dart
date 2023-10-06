@@ -817,8 +817,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   : Container(
                       margin: const EdgeInsets.only(top: 44),
                       child: ClipOval(
-                          child: Image.network(
-                        'https://moonvillageassociation.org/wp-content/uploads/2018/06/default-profile-picture1-768x768.jpg',
+                          child: Image.asset(
+                        'style/img/DefaultIcon.png',
                         height: 180,
                         width: 180,
                         fit: BoxFit.cover,
@@ -1035,8 +1035,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   : Container(
                       margin: const EdgeInsets.only(top: 44),
                       child: ClipOval(
-                        child: Image.network(
-                          'https://moonvillageassociation.org/wp-content/uploads/2018/06/default-profile-picture1-768x768.jpg',
+                        child: Image.asset(
+                          'style/img/DefaultIcon.png',
                           height: 180,
                           width: 180,
                           fit: BoxFit.cover,
