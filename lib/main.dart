@@ -14,7 +14,7 @@ Map userNow = {
   "Gender": "Pria",
   "Gambar": _image,
 };
-Uint8List? _image, _prevImage;
+Uint8List? _image;
 
 void main() {
   runApp(const MyApp());
@@ -904,9 +904,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
               )),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 22),
-            child: TextField(
-              controller: _genderController,
-              enabled: _isEditing,
+            child: DropdownButtonFormField(
+              value: _genderController.text,
+              items: ['Pria', 'Wanita'].map((String gender) {
+                return DropdownMenuItem(
+                  value: gender,
+                  child: Text(gender),
+                );
+              }).toList(),
+              onChanged: (String? value) {
+                if (value != null) {
+                  setState(() {
+                    _genderController.text = value;
+                  });
+                }
+              },
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
               ),
@@ -981,7 +993,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void selectImage() async {
     Uint8List img = await pickImage(ImageSource.gallery);
     setState(() {
-      _prevImage = _image;
       _image = img;
     });
   }
