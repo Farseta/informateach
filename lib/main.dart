@@ -563,7 +563,25 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => print("${data["NIDM"]} telah terpilih"),
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  content: Container(
+                                    child: Text(
+                                        "Dosen dengan ${data["NIDM"]} telah terpilih"),
+                                  ),
+                                  actions: [
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("OK"))
+                                  ],
+                                );
+                              });
+                        },
                         child: Container(
                           width: 285,
                           height: 140,
@@ -624,7 +642,23 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 } else if (index == listDosen.length - 1) {
                   return GestureDetector(
                       onTap: () {
-                        print('${data["NIDM"]} Telah terpilih');
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                content: Container(
+                                  child: Text(
+                                      "Dosen dengan ${data["NIDM"]} telah terpilih"),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text("OK"))
+                                ],
+                              );
+                            });
                       },
                       child: Container(
                         width: 160,
@@ -683,7 +717,23 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 } else {
                   return GestureDetector(
                       onTap: () {
-                        print('${data["NIDM"]} Telah terpilih');
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                content: Container(
+                                  child: Text(
+                                      "Dosen dengan ${data["NIDM"]} telah terpilih"),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text("OK"))
+                                ],
+                              );
+                            });
                       },
                       child: Container(
                         width: 160,
@@ -1358,11 +1408,25 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                         borderRadius:
                                             BorderRadius.circular(100),
                                       )),
-                                  onPressed: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Page1()),
-                                      ),
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            shape: RoundedRectangleBorder(
+                                              side: BorderSide(
+                                                width: 1,
+                                                color: Color(0xFF27374D),
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            content: Container(
+                                              child: Container(),
+                                            ),
+                                          );
+                                        });
+                                  },
                                   child: Text(
                                     "Cancel",
                                     style: TextStyle(
