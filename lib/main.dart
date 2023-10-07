@@ -1,14 +1,20 @@
 // ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api
 
+import 'dart:typed_data';
+
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:informateach/utils.dart';
 
 Map userNow = {
   "Gambar": "style/img/testUser/png",
   "Nama": "Christiano Zetro AB Sinaga",
   "Phone": "123456789123",
   "Gender": "Pria",
+  "Gambar": _image,
 };
+Uint8List? _image;
 
 void main() {
   runApp(const MyApp());
@@ -557,7 +563,25 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => print("${data["NIDM"]} telah terpilih"),
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  content: Container(
+                                    child: Text(
+                                        "Dosen dengan ${data["NIDM"]} telah terpilih"),
+                                  ),
+                                  actions: [
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("OK"))
+                                  ],
+                                );
+                              });
+                        },
                         child: Container(
                           width: 285,
                           height: 140,
@@ -618,7 +642,23 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 } else if (index == listDosen.length - 1) {
                   return GestureDetector(
                       onTap: () {
-                        print('${data["NIDM"]} Telah terpilih');
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                content: Container(
+                                  child: Text(
+                                      "Dosen dengan ${data["NIDM"]} telah terpilih"),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text("OK"))
+                                ],
+                              );
+                            });
                       },
                       child: Container(
                         width: 160,
@@ -677,7 +717,23 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 } else {
                   return GestureDetector(
                       onTap: () {
-                        print('${data["NIDM"]} Telah terpilih');
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                content: Container(
+                                  child: Text(
+                                      "Dosen dengan ${data["NIDM"]} telah terpilih"),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text("OK"))
+                                ],
+                              );
+                            });
                       },
                       child: Container(
                         width: 160,
@@ -744,17 +800,34 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
   }
 }
 
-class ProfilePage extends StatefulWidget {
+class EditProfilePage extends StatefulWidget {
+  const EditProfilePage({super.key});
+
   @override
-  _ProfilePageState createState() => _ProfilePageState();
+  State<EditProfilePage> createState() => _EditProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _nameController,
       _phoneController,
       _genderController;
-  // late TextEditingController _phoneController;
-  final bool _isEditing = false;
+  final bool _isEditing = true;
+  void selectImage() async {
+    Uint8List img = await pickImage(ImageSource.gallery);
+    setState(() {
+      _image = img;
+    });
+  }
+
+  void saveChanges() {
+    userNow["Name"] = _nameController.text;
+    userNow["Phone"] = _phoneController.text;
+    userNow["Gender"] = _genderController.text;
+  }
+
+  void cancelEdit() {
+    Navigator.pop(context);
+  }
 
   @override
   void initState() {
@@ -778,13 +851,249 @@ class _ProfilePageState extends State<ProfilePage> {
                 alignment: Alignment.centerLeft,
                 child: Image.asset('style/img/logoInformateach.png'),
               )),
+          Stack(
+            children: [
+              _image != null
+                  ? Container(
+                      margin: const EdgeInsets.only(top: 44),
+                      child: ClipOval(
+                        child: Image.memory(
+                          _image!,
+                          height: 180,
+                          width: 180,
+                          fit: BoxFit.cover,
+                        ),
+                      ))
+                  : Container(
+                      margin: const EdgeInsets.only(top: 44),
+                      child: ClipOval(
+                          child: Image.asset(
+                        'style/img/DefaultIcon.png',
+                        height: 180,
+                        width: 180,
+                        fit: BoxFit.cover,
+                      )),
+                    ),
+              Positioned(
+                child: IconButton(
+                  icon: Icon(Icons.add_a_photo),
+                  onPressed: selectImage,
+                ),
+                bottom: -10,
+                right: 4,
+              )
+            ],
+          ),
+
+          //Name User Container
           Container(
-            margin: const EdgeInsets.only(top: 44),
-            child: ClipOval(
-                child: Image.asset(
-              'style/img/testUser.png',
-              height: 180,
-            )),
+              margin: const EdgeInsets.only(left: 28, top: 45),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Name",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              )),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 22),
+            child: TextField(
+              controller: _nameController,
+              enabled: _isEditing,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+
+          //Phone Number Container
+          const SizedBox(
+            height: 15,
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 28),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Phone Number",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              )),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 22),
+            child: TextField(
+              controller: _phoneController,
+              enabled: _isEditing,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+
+          //Gender User Container
+          const SizedBox(
+            height: 15,
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 28),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Gender",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              )),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 22),
+            child: DropdownButtonFormField(
+              value: _genderController.text,
+              items: ['Pria', 'Wanita'].map((String gender) {
+                return DropdownMenuItem(
+                  value: gender,
+                  child: Text(gender),
+                );
+              }).toList(),
+              onChanged: (String? value) {
+                if (value != null) {
+                  setState(() {
+                    _genderController.text = value;
+                  });
+                }
+              },
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 68,
+          ),
+
+          //Save and Cancel Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  saveChanges();
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyAppMahasiswa(initialPage: 2),
+                      ));
+                },
+                style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(115, 45),
+                    backgroundColor: const Color.fromRGBO(82, 109, 130, 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    )),
+                child: const Text(
+                  "Save",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => cancelEdit(),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(115, 45),
+                  backgroundColor: const Color.fromRGBO(39, 55, 77, 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 15,
+                  ),
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    ));
+  }
+}
+
+class ProfilePage extends StatefulWidget {
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  late TextEditingController _nameController,
+      _phoneController,
+      _genderController;
+  final bool _isEditing = false;
+  void selectImage() async {
+    Uint8List img = await pickImage(ImageSource.gallery);
+    setState(() {
+      _image = img;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi controller dengan nilai dari database atau sesuai kebutuhan
+    _nameController = TextEditingController(text: userNow["Nama"]!);
+    _phoneController = TextEditingController(text: userNow["Phone"]!);
+    _genderController = TextEditingController(text: userNow["Gender"]!);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+              margin: const EdgeInsets.only(left: 14, top: 11),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Image.asset('style/img/logoInformateach.png'),
+              )),
+          Stack(
+            children: [
+              userNow["Gambar"] != null
+                  ? Container(
+                      margin: const EdgeInsets.only(top: 44),
+                      child: ClipOval(
+                        child: Image.memory(
+                          _image!,
+                          height: 180,
+                          width: 180,
+                          fit: BoxFit.cover,
+                        ),
+                      ))
+                  : Container(
+                      margin: const EdgeInsets.only(top: 44),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'style/img/DefaultIcon.png',
+                          height: 180,
+                          width: 180,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+            ],
           ),
 
           //Name User Container
@@ -873,12 +1182,8 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const MyAppMahasiswa(
-                              initialPage: 1,
-                            ))),
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => EditProfilePage())),
                 style: ElevatedButton.styleFrom(
                     minimumSize: const Size(115, 45),
                     backgroundColor: const Color.fromRGBO(82, 109, 130, 1),
@@ -1103,11 +1408,25 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                         borderRadius:
                                             BorderRadius.circular(100),
                                       )),
-                                  onPressed: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Page1()),
-                                      ),
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            shape: RoundedRectangleBorder(
+                                              side: BorderSide(
+                                                width: 1,
+                                                color: Color(0xFF27374D),
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            content: Container(
+                                              child: Container(),
+                                            ),
+                                          );
+                                        });
+                                  },
                                   child: Text(
                                     "Cancel",
                                     style: TextStyle(
