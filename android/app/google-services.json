@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "305690500747",
+    "project_id": "informateach-75811",
+    "storage_bucket": "informateach-75811.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305690500747:android:e556b7a8a37b2be6c17e8e",
+        "android_client_info": {
+          "package_name": "com.example.informateach"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWGPpu_xGXpo3rsPd2161sK6CVcSoTyfc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,6 +6,10 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:informateach/utils.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 Map userNow = {
   "Gambar": "style/img/testUser/png",
@@ -16,7 +20,10 @@ Map userNow = {
 };
 Uint8List? _image;
 
-void main() {
+void main() async{
+  await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
   runApp(const MyApp());
 }
 
