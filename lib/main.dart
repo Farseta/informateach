@@ -11,6 +11,7 @@ import 'package:informateach/utils.dart';
 Map userNow = {
   "Gambar": "style/img/testUser/png",
   "Nama": "Christiano Zetro AB Sinaga",
+  "NIM": "21051204033",
   "Phone": "123456789123",
   "Gender": "Pria",
   // ignore: equal_keys_in_map
@@ -515,8 +516,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
   ];
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(
+    return Scaffold(
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar(
@@ -695,11 +695,10 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         setState(() {
                           showBottomNavBar = false;
                         });
-                        Navigator.of(context, rootNavigator: true)
-                            .pushReplacement(MaterialPageRoute(
-                                builder: (context) => new AboutDosen()));
-                        // Navigator.of(context).push(MaterialPageRoute(
-                        //     builder: (context) => new AboutDosen()));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AboutDosen()));
                       },
                       child: Container(
                         width: 160,
@@ -762,7 +761,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
           ),
         ],
       ),
-    ));
+    );
   }
 }
 
@@ -1088,7 +1087,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    // Inisialisasi controller dengan nilai dari database atau sesuai kebutuhan
+
     _nameController = TextEditingController(text: userNow["Nama"]!);
     _phoneController = TextEditingController(text: userNow["Phone"]!);
     _genderController = TextEditingController(text: userNow["Gender"]!);

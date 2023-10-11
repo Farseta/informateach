@@ -73,9 +73,10 @@ flutter:
     - style/img/Head design homepage.png
     - style/img/testUser.png
     - style/img/testDosen1.png
-    - style/img/logoInformateach.png
+    - style/img/LogoInformateach.png
     - style/img/unesa 2.png
     - style/img/Line 2.png
+    - style/img/Line 4.png
     - style/img/DefaultIcon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
