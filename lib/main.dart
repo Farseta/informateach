@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:informateach/createTicket.dart';
 import 'package:informateach/utils.dart';
 
 Map userNow = {
@@ -19,7 +20,7 @@ Map userNow = {
 Uint8List? _image;
 // late bool showBottomNavBar;
 late bool showBottomNavBar;
-late String IdDosen;
+late String idDosen;
 
 void main() {
   runApp(const MyApp());
@@ -417,10 +418,8 @@ class MyAppMahasiswa extends StatefulWidget {
 }
 
 class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
-  /// Controller to handle PageView and also handles initial page
+  var indexPage = 0;
   late final PageController _pageController;
-
-  /// Controller to handle bottom nav bar and also handles initial page
   late final NotchBottomBarController _controller;
 
   @override
@@ -428,83 +427,75 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
     super.initState();
     _pageController = PageController(initialPage: widget.initialPage);
     _controller = NotchBottomBarController(index: widget.initialPage);
-    showBottomNavBar = true;
   }
-
-  int maxCount = 3;
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  /// widget list
-  final List<Widget> bottomBarPages = [
-    HomepageMahasiswa(),
-    const TicketMahasiswaPageContainer(),
-    ProfilePage(),
-  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        children: List.generate(
-            bottomBarPages.length, (index) => bottomBarPages[index]),
-      ),
-      extendBody: true,
-      bottomNavigationBar:
-          (showBottomNavBar && bottomBarPages.length <= maxCount)
-              ? AnimatedNotchBottomBar(
-                  notchBottomBarController: _controller,
-                  color: Colors.white,
-                  showLabel: true,
-                  notchColor: Colors.black87,
-                  bottomBarWidth: 500,
-                  durationInMilliSeconds: 300,
-                  bottomBarItems: const [
-                    BottomBarItem(
-                      inActiveItem: Icon(
-                        Icons.calendar_month,
-                        color: Colors.blueGrey,
-                      ),
-                      activeItem: Icon(
-                        Icons.calendar_month,
-                        color: Colors.blueAccent,
-                      ),
-                      itemLabel: 'Schedule',
-                    ),
-                    BottomBarItem(
-                      inActiveItem: Icon(
-                        Icons.confirmation_number,
-                        color: Colors.blueGrey,
-                      ),
-                      activeItem: Icon(
-                        Icons.confirmation_number,
-                        color: Colors.blueAccent,
-                      ),
-                      itemLabel: 'Ticket',
-                    ),
-                    BottomBarItem(
-                      inActiveItem: Icon(
-                        Icons.person,
-                        color: Colors.blueGrey,
-                      ),
-                      activeItem: Icon(
-                        Icons.person,
-                        color: Colors.blueAccent,
-                      ),
-                      itemLabel: 'Profile',
-                    )
-                  ],
-                  onTap: (index) {
-                    _pageController.jumpToPage(index);
-                  },
-                )
-              : null,
-    );
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: (index) {
+            _controller.jumpTo(index);
+            setState(() {
+              indexPage = index;
+            });
+          },
+          children: [
+            HomepageMahasiswa(),
+            const TicketMahasiswaPageContainer(),
+            ProfilePage(),
+          ],
+        ),
+        extendBody: true,
+        bottomNavigationBar: AnimatedNotchBottomBar(
+          notchBottomBarController: _controller,
+          onTap: (index) {
+            _pageController.animateToPage(index,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.bounceInOut);
+            setState(() {
+              indexPage = index;
+            });
+          },
+          color: Colors.white,
+          showLabel: true,
+          notchColor: Colors.black87,
+          bottomBarItems: const [
+            BottomBarItem(
+              inActiveItem: Icon(
+                Icons.calendar_month,
+                color: Colors.blueGrey,
+              ),
+              activeItem: Icon(
+                Icons.calendar_month,
+                color: Colors.blueAccent,
+              ),
+              itemLabel: 'Schedule',
+            ),
+            BottomBarItem(
+              inActiveItem: Icon(
+                Icons.confirmation_number,
+                color: Colors.blueGrey,
+              ),
+              activeItem: Icon(
+                Icons.confirmation_number,
+                color: Colors.blueAccent,
+              ),
+              itemLabel: 'Ticket',
+            ),
+            BottomBarItem(
+              inActiveItem: Icon(
+                Icons.person,
+                color: Colors.blueGrey,
+              ),
+              activeItem: Icon(
+                Icons.person,
+                color: Colors.blueAccent,
+              ),
+              itemLabel: 'Profile',
+            )
+          ],
+        ));
   }
 }
 
@@ -570,12 +561,12 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          IdDosen = data["NIDM"]!;
+                          idDosen = data["NIDM"]!;
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AboutDosen(),
-                              ));
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const AboutDosen()),
+                          );
                         },
                         child: Container(
                           width: 285,
@@ -637,11 +628,11 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 } else if (index == listDosen.length - 1) {
                   return GestureDetector(
                       onTap: () {
-                        IdDosen = data["NIDM"]!;
+                        idDosen = data["NIDM"]!;
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => AboutDosen()));
+                                builder: (context) => const AboutDosen()));
                       },
                       child: Container(
                         width: 160,
@@ -700,14 +691,15 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 } else {
                   return GestureDetector(
                       onTap: () {
-                        IdDosen = data["NIDM"]!;
+                        idDosen = data["NIDM"]!;
                         setState(() {
                           showBottomNavBar = false;
                         });
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => AboutDosen()),
-                        );
+                        Navigator.of(context, rootNavigator: true)
+                            .pushReplacement(MaterialPageRoute(
+                                builder: (context) => new AboutDosen()));
+                        // Navigator.of(context).push(MaterialPageRoute(
+                        //     builder: (context) => new AboutDosen()));
                       },
                       child: Container(
                         width: 160,
@@ -782,7 +774,7 @@ class AboutDosen extends StatefulWidget {
 }
 
 class _AboutDosenState extends State<AboutDosen> {
-  String idDosen = IdDosen;
+  String idDosenNow = idDosen;
   late Map selectedDosen;
 
   @override
@@ -801,275 +793,266 @@ class _AboutDosenState extends State<AboutDosen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white10,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: Colors.black,
+            ),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MyAppMahasiswa(initialPage: 0)));
+            },
+          ),
+        ),
         body: SingleChildScrollView(
             child: Center(
                 child: Column(
-      children: [
-        SizedBox(
-          height: 32,
-        ),
-        Image.asset(
-          selectedDosen["Gambar"]!,
-          width: 113.82,
-          height: 163,
-          fit: BoxFit.fill,
-        ),
-        SizedBox(
-          height: 19,
-        ),
-        Container(
-            width: 256,
-            height: 44,
-            margin: EdgeInsets.all(0),
-            decoration: ShapeDecoration(
-              color: Color(0xFF27374D),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              shadows: [
-                BoxShadow(
-                  color: Color(0x3F000000),
-                  blurRadius: 4,
-                  offset: Offset(0, 4),
-                  spreadRadius: 0,
-                )
-              ],
+          children: [
+            Image.asset(
+              selectedDosen["Gambar"]!,
+              width: 113.82,
+              height: 163,
+              fit: BoxFit.fill,
             ),
-            child: Align(
-              alignment: Alignment.center,
-              child: Text(
-                selectedDosen["Nama"],
-                style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontSize: 15,
-                  color: Colors.white,
-                ),
-              ),
-            )),
-        SizedBox(
-          height: 17,
-        ),
-        Container(
-          width: 400,
-          height: 55,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Color(0x3F000000),
-                blurRadius: 4,
-                offset: Offset(0, 4),
-                spreadRadius: 0,
-              )
-            ],
-          ),
-          child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            GestureDetector(
-                child: Text(
-              "ABOUT",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontFamily: 'Quicksand',
-                fontWeight: FontWeight.w700,
-                height: 0,
-              ),
-            )),
-            Image.asset("style/img/Line 2.png"),
-            GestureDetector(
-              child: Text(
-                "SCHEDULE",
-                style: TextStyle(
-                  color: Colors.black.withOpacity(0.2),
-                  fontSize: 20,
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w700,
-                  height: 0,
-                ),
-              ),
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CreateTicket()));
-              },
-            )
-          ]),
-        ),
-        SizedBox(
-          height: 55,
-        ),
-        Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-                margin: EdgeInsets.only(
-                  left: 35,
-                ),
-                child: Text(
-                  "Program Studi",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontFamily: 'Quicksand',
-                    fontWeight: FontWeight.w700,
-                    height: 0,
+            const SizedBox(
+              height: 19,
+            ),
+            Container(
+                width: 256,
+                height: 44,
+                margin: const EdgeInsets.all(0),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFF27374D),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                ))),
-        Container(
-          width: 325,
-          height: 37,
-          padding: EdgeInsets.only(left: 10),
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(
-                width: 1,
-                color: Colors.black.withOpacity(0.5),
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(selectedDosen["Prodi"]!)),
-        ),
-        SizedBox(
-          height: 18,
-        ),
-        Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-                margin: EdgeInsets.only(
-                  left: 35,
+                  shadows: [
+                    const BoxShadow(
+                      color: Color(0x3F000000),
+                      blurRadius: 4,
+                      offset: Offset(0, 4),
+                      spreadRadius: 0,
+                    )
+                  ],
                 ),
-                child: Text(
-                  "NIP",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontFamily: 'Quicksand',
-                    fontWeight: FontWeight.w700,
-                    height: 0,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    selectedDosen["Nama"],
+                    style: const TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 15,
+                      color: Colors.white,
+                    ),
                   ),
-                ))),
-        Container(
-          width: 325,
-          height: 37,
-          padding: EdgeInsets.only(left: 10),
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(
-                width: 1,
-                color: Colors.black.withOpacity(0.5),
-              ),
-              borderRadius: BorderRadius.circular(10),
+                )),
+            const SizedBox(
+              height: 17,
             ),
-          ),
-          child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(selectedDosen["NIP"]!)),
-        ),
-        SizedBox(
-          height: 18,
-        ),
-        Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-                margin: EdgeInsets.only(
-                  left: 35,
+            Container(
+              width: 400,
+              height: 55,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x3F000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 4),
+                    spreadRadius: 0,
+                  )
+                ],
+              ),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GestureDetector(
+                        child: const Text(
+                      "ABOUT",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontFamily: 'Quicksand',
+                        fontWeight: FontWeight.w700,
+                        height: 0,
+                      ),
+                    )),
+                    Image.asset("style/img/Line 2.png"),
+                    GestureDetector(
+                      child: Text(
+                        "SCHEDULE",
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.2),
+                          fontSize: 20,
+                          fontFamily: 'Quicksand',
+                          fontWeight: FontWeight.w700,
+                          height: 0,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CreateTicket()));
+                      },
+                    )
+                  ]),
+            ),
+            const SizedBox(
+              height: 55,
+            ),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                    margin: const EdgeInsets.only(
+                      left: 35,
+                    ),
+                    child: const Text(
+                      "Program Studi",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontFamily: 'Quicksand',
+                        fontWeight: FontWeight.w700,
+                        height: 0,
+                      ),
+                    ))),
+            Container(
+              width: 325,
+              height: 37,
+              padding: const EdgeInsets.only(left: 10),
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(
-                  "NIDN",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontFamily: 'Quicksand',
-                    fontWeight: FontWeight.w700,
-                    height: 0,
-                  ),
-                ))),
-        Container(
-          width: 325,
-          height: 37,
-          padding: EdgeInsets.only(left: 10),
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(
-                width: 1,
-                color: Colors.black.withOpacity(0.5),
               ),
-              borderRadius: BorderRadius.circular(10),
+              child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(selectedDosen["Prodi"]!)),
             ),
-          ),
-          child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(selectedDosen["NIDN"]!)),
-        ),
-        SizedBox(
-          height: 18,
-        ),
-        Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-                margin: EdgeInsets.only(
-                  left: 35,
+            const SizedBox(
+              height: 18,
+            ),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                    margin: const EdgeInsets.only(
+                      left: 35,
+                    ),
+                    child: const Text(
+                      "NIP",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontFamily: 'Quicksand',
+                        fontWeight: FontWeight.w700,
+                        height: 0,
+                      ),
+                    ))),
+            Container(
+              width: 325,
+              height: 37,
+              padding: const EdgeInsets.only(left: 10),
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(
-                  "E-mail UNESA",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontFamily: 'Quicksand',
-                    fontWeight: FontWeight.w700,
-                    height: 0,
-                  ),
-                ))),
-        Container(
-          width: 325,
-          height: 37,
-          padding: EdgeInsets.only(left: 10),
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(
-                width: 1,
-                color: Colors.black.withOpacity(0.5),
               ),
-              borderRadius: BorderRadius.circular(10),
+              child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(selectedDosen["NIP"]!)),
             ),
-          ),
-          child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(selectedDosen["Email"]!)),
-        ),
-      ],
-    ))));
-  }
-}
-
-class CreateTicket extends StatefulWidget {
-  const CreateTicket({super.key});
-
-  @override
-  State<CreateTicket> createState() => _CreateTicketState();
-}
-
-class _CreateTicketState extends State<CreateTicket> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: Center(
-      child: Column(
-        children: [
-          SizedBox(height: 100),
-          ElevatedButton(
-              child: Text("About"),
-              onPressed: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AboutDosen()))),
-        ],
-      ),
-    ));
+            const SizedBox(
+              height: 18,
+            ),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                    margin: const EdgeInsets.only(
+                      left: 35,
+                    ),
+                    child: const Text(
+                      "NIDN",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontFamily: 'Quicksand',
+                        fontWeight: FontWeight.w700,
+                        height: 0,
+                      ),
+                    ))),
+            Container(
+              width: 325,
+              height: 37,
+              padding: const EdgeInsets.only(left: 10),
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(selectedDosen["NIDN"]!)),
+            ),
+            const SizedBox(
+              height: 18,
+            ),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                    margin: const EdgeInsets.only(
+                      left: 35,
+                    ),
+                    child: const Text(
+                      "E-mail UNESA",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontFamily: 'Quicksand',
+                        fontWeight: FontWeight.w700,
+                        height: 0,
+                      ),
+                    ))),
+            Container(
+              width: 325,
+              height: 37,
+              padding: const EdgeInsets.only(left: 10),
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                    width: 1,
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(selectedDosen["Email"]!)),
+            ),
+          ],
+        ))));
   }
 }
 
@@ -1149,7 +1132,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ),
               Positioned(
                 child: IconButton(
-                  icon: Icon(Icons.add_a_photo),
+                  icon: const Icon(Icons.add_a_photo),
                   onPressed: selectImage,
                 ),
                 bottom: -10,
@@ -1261,7 +1244,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MyAppMahasiswa(initialPage: 2),
+                        builder: (context) =>
+                            const MyAppMahasiswa(initialPage: 2),
                       ));
                 },
                 style: ElevatedButton.styleFrom(
@@ -1459,7 +1443,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => EditProfilePage()));
+                          builder: (context) => const EditProfilePage()));
                 },
                 style: ElevatedButton.styleFrom(
                     minimumSize: const Size(115, 45),
@@ -1546,7 +1530,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                 Container(
                   width: 458,
                   height: 75,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     boxShadow: [
                       BoxShadow(
                         color: Color(0x3F000000),
@@ -1565,8 +1549,8 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    MyAppMahasiswa(initialPage: 1))),
-                        child: Text(
+                                    const MyAppMahasiswa(initialPage: 1))),
+                        child: const Text(
                           "AVAILABLE",
                           style: TextStyle(
                             fontFamily: 'Quicksand',
@@ -1604,7 +1588,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                         borderRadius: BorderRadius.circular(8)),
                     color: Colors.white,
                     shadows: [
-                      BoxShadow(
+                      const BoxShadow(
                         color: Color(0x3F000000),
                         offset: Offset(0, 4),
                         spreadRadius: 0,
@@ -1612,7 +1596,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                       ),
                     ],
                   ),
-                  margin: EdgeInsets.only(left: 11, right: 11, top: 14),
+                  margin: const EdgeInsets.only(left: 11, right: 11, top: 14),
                   child: Row(
                     children: [
                       Image.asset(
@@ -1620,16 +1604,16 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                         height: 112,
                         fit: BoxFit.cover,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 17,
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 33),
+                          const SizedBox(height: 33),
                           Text(
                             data["Dosen"]!,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -1637,14 +1621,14 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                           ),
                           Text(
                             "${data["Tanggal"]}, ${data["Jam"]}",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 10,
                             ),
                           ),
                           Text(
                             "${data["Tujuan"]}",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 10,
                             ),
@@ -1654,10 +1638,10 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                             children: [
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                      minimumSize: Size(70, 15),
-                                      padding: EdgeInsets.all(0),
+                                      minimumSize: const Size(70, 15),
+                                      padding: const EdgeInsets.all(0),
                                       backgroundColor:
-                                          Color.fromRGBO(39, 55, 77, 1),
+                                          const Color.fromRGBO(39, 55, 77, 1),
                                       shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(100),
@@ -1665,9 +1649,10 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                   onPressed: () => Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => Page1()),
+                                            builder: (context) =>
+                                                const Page1()),
                                       ),
-                                  child: Text(
+                                  child: const Text(
                                     "Verification",
                                     style: TextStyle(
                                       fontFamily: 'Quicksand',
@@ -1676,15 +1661,15 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   )),
-                              SizedBox(
+                              const SizedBox(
                                 width: 58,
                               ),
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                      minimumSize: Size(70, 15),
-                                      padding: EdgeInsets.all(0),
+                                      minimumSize: const Size(70, 15),
+                                      padding: const EdgeInsets.all(0),
                                       backgroundColor:
-                                          Color.fromRGBO(39, 55, 77, 1),
+                                          const Color.fromRGBO(39, 55, 77, 1),
                                       shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(100),
@@ -1695,7 +1680,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                         builder: (context) {
                                           return AlertDialog(
                                             shape: RoundedRectangleBorder(
-                                              side: BorderSide(
+                                              side: const BorderSide(
                                                 width: 1,
                                                 color: Color(0xFF27374D),
                                               ),
@@ -1708,7 +1693,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                           );
                                         });
                                   },
-                                  child: Text(
+                                  child: const Text(
                                     "Cancel",
                                     style: TextStyle(
                                       fontFamily: 'Quicksand',
@@ -1737,7 +1722,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                       borderRadius: BorderRadius.circular(8)),
                   color: Colors.white,
                   shadows: [
-                    BoxShadow(
+                    const BoxShadow(
                       color: Color(0x3F000000),
                       offset: Offset(0, 4),
                       spreadRadius: 0,
@@ -1745,7 +1730,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                     ),
                   ],
                 ),
-                margin: EdgeInsets.only(left: 11, right: 11, top: 14),
+                margin: const EdgeInsets.only(left: 11, right: 11, top: 14),
                 child: Row(
                   children: [
                     Image.asset(
@@ -1753,16 +1738,16 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                       height: 112,
                       fit: BoxFit.cover,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 17,
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 33),
+                        const SizedBox(height: 33),
                         Text(
                           data["Dosen"]!,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -1770,14 +1755,14 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                         ),
                         Text(
                           "${data["Tanggal"]}, ${data["Jam"]}",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 10,
                           ),
                         ),
                         Text(
                           "${data["Tujuan"]}",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 10,
                           ),
@@ -1787,19 +1772,19 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                           children: [
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(70, 15),
-                                    padding: EdgeInsets.all(0),
+                                    minimumSize: const Size(70, 15),
+                                    padding: const EdgeInsets.all(0),
                                     backgroundColor:
-                                        Color.fromRGBO(39, 55, 77, 1),
+                                        const Color.fromRGBO(39, 55, 77, 1),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(100),
                                     )),
                                 onPressed: () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => Page1()),
+                                          builder: (context) => const Page1()),
                                     ),
-                                child: Text(
+                                child: const Text(
                                   "Verification",
                                   style: TextStyle(
                                     fontFamily: 'Quicksand',
@@ -1808,24 +1793,24 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 )),
-                            SizedBox(
+                            const SizedBox(
                               width: 58,
                             ),
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(70, 15),
-                                    padding: EdgeInsets.all(0),
+                                    minimumSize: const Size(70, 15),
+                                    padding: const EdgeInsets.all(0),
                                     backgroundColor:
-                                        Color.fromRGBO(39, 55, 77, 1),
+                                        const Color.fromRGBO(39, 55, 77, 1),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(100),
                                     )),
                                 onPressed: () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => Page1()),
+                                          builder: (context) => const Page1()),
                                     ),
-                                child: Text(
+                                child: const Text(
                                   "Cancel",
                                   style: TextStyle(
                                     fontFamily: 'Quicksand',
@@ -1885,7 +1870,7 @@ class HistoryTicketPage extends StatelessWidget {
                 Container(
                   width: 458,
                   height: 75,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     boxShadow: [
                       BoxShadow(
                         color: Color(0x3F000000),
@@ -1904,7 +1889,7 @@ class HistoryTicketPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    MyAppMahasiswa(initialPage: 1))),
+                                    const MyAppMahasiswa(initialPage: 1))),
                         child: Text(
                           "AVAILABLE",
                           style: TextStyle(
@@ -1921,7 +1906,7 @@ class HistoryTicketPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => HistoryTicketPage())),
-                        child: Text(
+                        child: const Text(
                           "HISTORY",
                           style: TextStyle(
                             fontSize: 20,
@@ -1943,7 +1928,7 @@ class HistoryTicketPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8)),
                     color: Colors.white,
                     shadows: [
-                      BoxShadow(
+                      const BoxShadow(
                         color: Color(0x3F000000),
                         offset: Offset(0, 4),
                         spreadRadius: 0,
@@ -1951,7 +1936,7 @@ class HistoryTicketPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  margin: EdgeInsets.only(left: 11, right: 11, top: 14),
+                  margin: const EdgeInsets.only(left: 11, right: 11, top: 14),
                   child: Row(
                     children: [
                       Image.asset(
@@ -1959,16 +1944,16 @@ class HistoryTicketPage extends StatelessWidget {
                         height: 112,
                         fit: BoxFit.cover,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 17,
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 33),
+                          const SizedBox(height: 33),
                           Text(
                             data["Dosen"]!,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -1976,19 +1961,19 @@ class HistoryTicketPage extends StatelessWidget {
                           ),
                           Text(
                             "${data["Tanggal"]}, ${data["Jam"]}",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 10,
                             ),
                           ),
                           Text(
                             "${data["Tujuan"]}",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 10,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 19,
                           ),
                           Container(
@@ -1998,8 +1983,8 @@ class HistoryTicketPage extends StatelessWidget {
                               data["Status"],
                               style: TextStyle(
                                   color: data["Status"] == "Success"
-                                      ? Color(0xFF0165FC)
-                                      : Color(0xFFFF0000),
+                                      ? const Color(0xFF0165FC)
+                                      : const Color(0xFFFF0000),
                                   fontFamily: 'Quicksand',
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold),
@@ -2023,7 +2008,7 @@ class HistoryTicketPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8)),
                   color: Colors.white,
                   shadows: [
-                    BoxShadow(
+                    const BoxShadow(
                       color: Color(0x3F000000),
                       offset: Offset(0, 4),
                       spreadRadius: 0,
@@ -2031,7 +2016,7 @@ class HistoryTicketPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                margin: EdgeInsets.only(left: 11, right: 11, top: 14),
+                margin: const EdgeInsets.only(left: 11, right: 11, top: 14),
                 child: Row(
                   children: [
                     Image.asset(
@@ -2039,16 +2024,16 @@ class HistoryTicketPage extends StatelessWidget {
                       height: 112,
                       fit: BoxFit.cover,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 17,
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 33),
+                        const SizedBox(height: 33),
                         Text(
                           data["Dosen"]!,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -2056,19 +2041,19 @@ class HistoryTicketPage extends StatelessWidget {
                         ),
                         Text(
                           "${data["Tanggal"]}, ${data["Jam"]}",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 10,
                           ),
                         ),
                         Text(
                           "${data["Tujuan"]}",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 10,
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 19,
                         ),
                         Container(
@@ -2078,8 +2063,8 @@ class HistoryTicketPage extends StatelessWidget {
                             data["Status"],
                             style: TextStyle(
                                 color: data["Status"] == "Success"
-                                    ? Color(0xFF0165FC)
-                                    : Color(0xFFFF0000),
+                                    ? const Color(0xFF0165FC)
+                                    : const Color(0xFFFF0000),
                                 fontFamily: 'Quicksand',
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold),
