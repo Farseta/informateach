@@ -9,7 +9,9 @@ import 'package:informateach/utils.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 Map userNow = {
   "Gambar": "style/img/testUser/png",
@@ -21,6 +23,7 @@ Map userNow = {
 Uint8List? _image;
 
 void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
   options: DefaultFirebaseOptions.currentPlatform,
 );
@@ -67,7 +70,7 @@ class LoginPage extends StatelessWidget {
               child: const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Username',
+                  'Email',
                   style: TextStyle(
                     fontFamily: 'Quicksand',
                     fontSize: 17,
@@ -80,7 +83,7 @@ class LoginPage extends StatelessWidget {
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
               child: const TextField(
                 decoration: InputDecoration(
-                  labelText: 'Insert your username!',
+                  labelText: 'Insert your Email!',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -126,7 +129,20 @@ class LoginPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
             ElevatedButton(
-              onPressed: () {
+              onPressed: ()  async{
+                // percobaan
+                // try{
+                //   await FirebaseAuth.instance.signInWithEmailAndPassword(
+                //     email: 'rizamcshane@gmail.com',
+                //     password: 'akucintakimihime',
+                //   );
+                // }
+                // on Exception catch(e){
+                //   print(e);
+                // }
+                // percobaan end
+
+
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -177,8 +193,30 @@ class LoginPage extends StatelessWidget {
 }
 
 class RegisterPage extends StatelessWidget {
+ 
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nimController =TextEditingController();
+  final TextEditingController _phoneController= TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPassController = TextEditingController();
+  
+  
   @override
   Widget build(BuildContext context) {
+    CollectionReference mahasiswa = FirebaseFirestore.instance.collection('mahasiswa');
+    Future<void> addUser(){
+      return mahasiswa
+      .add({
+        'name': _nameController.text,
+        'nim': _nimController.text,
+        'phone': _phoneController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      })
+      .then((value) => print('User Added'))
+      .catchError((error) => print('Failed to add user: $error'));
+    }
     return Scaffold(
         body: SingleChildScrollView(
       child: Center(
@@ -220,7 +258,8 @@ class RegisterPage extends StatelessWidget {
             const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
+              child: TextField(
+                controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Insert your name!',
                   border: OutlineInputBorder(),
@@ -244,7 +283,8 @@ class RegisterPage extends StatelessWidget {
             const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
+              child:  TextField(
+                controller: _nimController,
                 decoration: InputDecoration(
                   labelText: 'Insert your NIM!',
                   border: OutlineInputBorder(),
@@ -268,7 +308,8 @@ class RegisterPage extends StatelessWidget {
             const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
+              child: TextField(
+                controller: _phoneController,
                 decoration: InputDecoration(
                   labelText: 'Insert your phone number!',
                   border: OutlineInputBorder(),
@@ -281,7 +322,7 @@ class RegisterPage extends StatelessWidget {
               child: const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Username',
+                  'Email',
                   style: TextStyle(
                     fontFamily: 'Quicksand',
                     fontSize: 17,
@@ -292,9 +333,10 @@ class RegisterPage extends StatelessWidget {
             const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
+              child:  TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Insert your new username!',
+                  labelText: 'Insert your new Email!',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -316,7 +358,8 @@ class RegisterPage extends StatelessWidget {
             const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
+              child:  TextField(
+                controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: 'Insert your new password!',
                   border: OutlineInputBorder(),
@@ -340,7 +383,8 @@ class RegisterPage extends StatelessWidget {
             const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
+              child:  TextField(
+                controller: _confirmPassController,
                 decoration: InputDecoration(
                   labelText: 'Confirm your new password!',
                   border: OutlineInputBorder(),
@@ -350,6 +394,7 @@ class RegisterPage extends StatelessWidget {
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
+                
                 print('Sign In Function');
               },
               style: ElevatedButton.styleFrom(
