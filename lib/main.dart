@@ -1,5 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api
 
+
 import 'dart:typed_data';
 
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
@@ -42,6 +43,12 @@ class MyApp extends StatelessWidget {
 }
 
 class LoginPage extends StatelessWidget {
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _PasswordConntroller =TextEditingController();
+  // static Future<void> masuk({String email, String pass}) async{
+
+  // }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,7 +88,8 @@ class LoginPage extends StatelessWidget {
             const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
+              child: TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Insert your Email!',
                   border: OutlineInputBorder(),
@@ -105,7 +113,8 @@ class LoginPage extends StatelessWidget {
             const SizedBox(height: 10),
             Container(
               margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
+              child: TextField(
+                controller: _PasswordConntroller,
                 decoration: InputDecoration(
                   labelText: 'Insert your password!',
                   border: OutlineInputBorder(),
@@ -131,15 +140,16 @@ class LoginPage extends StatelessWidget {
             ElevatedButton(
               onPressed: ()  async{
                 // percobaan
-                // try{
-                //   await FirebaseAuth.instance.signInWithEmailAndPassword(
-                //     email: 'rizamcshane@gmail.com',
-                //     password: 'akucintakimihime',
-                //   );
-                // }
-                // on Exception catch(e){
-                //   print(e);
-                // }
+                try{
+                  await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    email: _emailController.text,
+                    password:_PasswordConntroller.text,
+                  );
+                  print(" i can login");
+                }
+                on Exception catch(e){
+                  print(e);
+                }
                 // percobaan end
 
 
@@ -204,8 +214,11 @@ class RegisterPage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    FirebaseAuth _auth = FirebaseAuth.instance;
     CollectionReference mahasiswa = FirebaseFirestore.instance.collection('mahasiswa');
     Future<void> addUser(){
+      
+      
       return mahasiswa
       .add({
         'name': _nameController.text,
@@ -214,7 +227,23 @@ class RegisterPage extends StatelessWidget {
         'email': _emailController.text,
         'password': _passwordController.text,
       })
-      .then((value) => print('User Added'))
+      .then((value) async { 
+        try {
+          await _auth.createUserWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
+          // _auth.sendSignInLinkToEmail(
+          //   email: _emailController.text, 
+          //   actionCodeSettings: 
+          //   );
+           } catch (e) {
+             print(e);
+           }
+        print('User Added');
+        _nameController.clear();
+        _nimController.clear();
+        _phoneController.clear();
+        _emailController.clear();
+        _passwordController.clear();
+        })
       .catchError((error) => print('Failed to add user: $error'));
     }
     return Scaffold(
@@ -393,8 +422,12 @@ class RegisterPage extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 
+                
+                addUser();
+                Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => LoginPage()));
                 print('Sign In Function');
               },
               style: ElevatedButton.styleFrom(
