@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:informateach/createTicket.dart';
+import 'package:informateach/dialog/confirmTicketDialog.dart';
 import 'package:informateach/main.dart';
 
 Map ticket = {};
@@ -178,7 +179,13 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
               height: 94,
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ConfirmTicketDialog();
+                    });
+              },
               child: Container(
                   width: 400,
                   height: 86,

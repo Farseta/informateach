@@ -6,6 +6,7 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:informateach/createTicket.dart';
+import 'package:informateach/dialog/cancelTicketDialog.dart';
 import 'package:informateach/utils.dart';
 
 Map userNow = {
@@ -443,7 +444,7 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
           },
           children: [
             HomepageMahasiswa(),
-            const TicketMahasiswaPageContainer(),
+            const TicketMahasiswaPage(),
             ProfilePage(),
           ],
         ),
@@ -459,7 +460,7 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
             });
           },
           color: Colors.white,
-          showLabel: true,
+          showLabel: false,
           notchColor: Colors.black87,
           bottomBarItems: const [
             BottomBarItem(
@@ -1104,7 +1105,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               margin: const EdgeInsets.only(left: 14, top: 11),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Image.asset('style/img/logoInformateach.png'),
+                child: Image.asset('style/img/LogoInformateach.png'),
               )),
           Stack(
             children: [
@@ -1323,7 +1324,7 @@ class _ProfilePageState extends State<ProfilePage> {
               margin: const EdgeInsets.only(left: 14, top: 11),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Image.asset('style/img/logoInformateach.png'),
+                child: Image.asset('style/img/LogoInformateach.png'),
               )),
           Stack(
             children: [
@@ -1486,17 +1487,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-class TicketMahasiswaPageContainer extends StatelessWidget {
-  const TicketMahasiswaPageContainer({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: TicketMahasiswaPage(),
-    );
-  }
-}
-
 class TicketMahasiswaPage extends StatefulWidget {
   const TicketMahasiswaPage({super.key});
 
@@ -1633,36 +1623,8 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                             ),
                           ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      minimumSize: const Size(70, 15),
-                                      padding: const EdgeInsets.all(0),
-                                      backgroundColor:
-                                          const Color.fromRGBO(39, 55, 77, 1),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(100),
-                                      )),
-                                  onPressed: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const Page1()),
-                                      ),
-                                  child: const Text(
-                                    "Verification",
-                                    style: TextStyle(
-                                      fontFamily: 'Quicksand',
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )),
-                              const SizedBox(
-                                width: 58,
-                              ),
+                              SizedBox(width: 140),
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                       minimumSize: const Size(70, 15),
@@ -1676,23 +1638,11 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                   onPressed: () {
                                     showDialog(
                                         context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            shape: RoundedRectangleBorder(
-                                              side: const BorderSide(
-                                                width: 1,
-                                                color: Color(0xFF27374D),
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            content: Container(
-                                              child: Container(),
-                                            ),
-                                          );
+                                        builder: (BuildContext context) {
+                                          return CancelTicketDialog();
                                         });
                                   },
-                                  child: const Text(
+                                  child: Text(
                                     "Cancel",
                                     style: TextStyle(
                                       fontFamily: 'Quicksand',
@@ -1767,8 +1717,8 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                           ),
                         ),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            SizedBox(width: 140),
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                     minimumSize: const Size(70, 15),
@@ -1778,38 +1728,14 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(100),
                                     )),
-                                onPressed: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => const Page1()),
-                                    ),
-                                child: const Text(
-                                  "Verification",
-                                  style: TextStyle(
-                                    fontFamily: 'Quicksand',
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )),
-                            const SizedBox(
-                              width: 58,
-                            ),
-                            ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    minimumSize: const Size(70, 15),
-                                    padding: const EdgeInsets.all(0),
-                                    backgroundColor:
-                                        const Color.fromRGBO(39, 55, 77, 1),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(100),
-                                    )),
-                                onPressed: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => const Page1()),
-                                    ),
-                                child: const Text(
+                                onPressed: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return CancelTicketDialog();
+                                      });
+                                },
+                                child: Text(
                                   "Cancel",
                                   style: TextStyle(
                                     fontFamily: 'Quicksand',
