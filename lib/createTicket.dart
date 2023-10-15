@@ -303,14 +303,14 @@ class _CreateTicketState extends State<CreateTicket> {
                 )
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 28,
             ),
             Align(
                 alignment: Alignment.centerLeft,
                 child: Container(
-                  margin: EdgeInsets.only(left: 37),
-                  child: Text(
+                  margin: const EdgeInsets.only(left: 37),
+                  child: const Text(
                     "PURPOSE",
                     style: TextStyle(
                         fontFamily: 'Quicksand',
@@ -322,9 +322,9 @@ class _CreateTicketState extends State<CreateTicket> {
               width: 320,
               height: 91,
               decoration: ShapeDecoration(
-                color: Color(0x33526D82),
+                color: const Color(0x33526D82),
                 shape: RoundedRectangleBorder(
-                  side: BorderSide(width: 1, color: Color(0xFF27374D)),
+                  side: const BorderSide(width: 1, color: Color(0xFF27374D)),
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -332,17 +332,17 @@ class _CreateTicketState extends State<CreateTicket> {
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
                   controller: _purposeController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: InputBorder
                         .none, // Hapus border internal dari TextField
                     hintText: 'Enter your purpose',
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
-                  style: TextStyle(color: Colors.black45),
+                  style: const TextStyle(color: Colors.black45),
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 19,
             ),
             GestureDetector(
@@ -351,13 +351,15 @@ class _CreateTicketState extends State<CreateTicket> {
                 finalSelectedTime = selectedTime;
                 dosen = idDosenNow;
                 finalPurpose = _purposeController.text;
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ConfirmTicket()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ConfirmTicket()));
               },
               child: Container(
                   width: 400,
                   height: 86,
-                  decoration: ShapeDecoration(
+                  decoration: const ShapeDecoration(
                     color: Color(0xFF27374D),
                     shape: RoundedRectangleBorder(
                       side: BorderSide(width: 1),
@@ -367,7 +369,7 @@ class _CreateTicketState extends State<CreateTicket> {
                       ),
                     ),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       "SELECT",
                       style: TextStyle(
