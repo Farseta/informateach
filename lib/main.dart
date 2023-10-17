@@ -1240,6 +1240,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
             children: [
               ElevatedButton(
                 onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                   saveChanges();
                   Navigator.push(
                       context,
@@ -1328,7 +1330,7 @@ class _ProfilePageState extends State<ProfilePage> {
               )),
           Stack(
             children: [
-              userNow["Gambar"] != null
+              _image != null
                   ? Container(
                       margin: const EdgeInsets.only(top: 44),
                       child: ClipOval(
