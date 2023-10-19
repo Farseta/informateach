@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/cancelTicketDialog.dart';
+import 'package:informateach/dosen/landingPage.dart';
 import 'package:informateach/utils.dart';
 
 Map userNow = {
@@ -128,10 +129,16 @@ class LoginPage extends StatelessWidget {
             const SizedBox(height: 15),
             ElevatedButton(
               onPressed: () {
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (context) => const MyAppMahasiswa(
+                //               initialPage: 0,
+                //             )));
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MyAppMahasiswa(
+                        builder: (context) => MyAppDosen(
                               initialPage: 0,
                             )));
               },
