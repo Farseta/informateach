@@ -2,26 +2,18 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:informateach/dosen/editProfile.dart';
 import 'package:informateach/dosen/landingPage.dart';
+import 'package:informateach/dosen/navbarConnected/profile.dart';
 import 'package:informateach/utils.dart';
 
-Map<String, String> dosenNow = {
-  "Email": "gheasekar@unesa.ac.id",
-  "Name": "Ghea Sekar Palupi, S.Kom., M.I.M",
-  "NIP": "123456789123456",
-  "Phone": "123456789123",
-  "Gender": "Female",
-};
-
-class ProfileDosen extends StatefulWidget {
-  const ProfileDosen({super.key});
+class EditProfileDosen extends StatefulWidget {
+  const EditProfileDosen({super.key});
 
   @override
-  State<ProfileDosen> createState() => _ProfileDosenState();
+  State<EditProfileDosen> createState() => _EditProfileDosenState();
 }
 
-class _ProfileDosenState extends State<ProfileDosen> {
+class _EditProfileDosenState extends State<EditProfileDosen> {
   late TextEditingController _nameController,
       _phoneController,
       _nipController,
@@ -126,7 +118,7 @@ class _ProfileDosenState extends State<ProfileDosen> {
               margin: const EdgeInsets.symmetric(horizontal: 22),
               child: TextField(
                 controller: _nameController,
-                enabled: false,
+                enabled: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),
@@ -150,7 +142,7 @@ class _ProfileDosenState extends State<ProfileDosen> {
               margin: const EdgeInsets.symmetric(horizontal: 22),
               child: TextField(
                 controller: _nipController,
-                enabled: false,
+                enabled: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),
@@ -177,7 +169,7 @@ class _ProfileDosenState extends State<ProfileDosen> {
               margin: const EdgeInsets.symmetric(horizontal: 22),
               child: TextField(
                 controller: _phoneController,
-                enabled: false,
+                enabled: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),
@@ -204,7 +196,7 @@ class _ProfileDosenState extends State<ProfileDosen> {
               margin: const EdgeInsets.symmetric(horizontal: 22),
               child: TextField(
                 controller: _genderController,
-                enabled: false,
+                enabled: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),
@@ -214,16 +206,15 @@ class _ProfileDosenState extends State<ProfileDosen> {
               height: 68,
             ),
 
-            //Log Out Button and Edit Profile Button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const EditProfileDosen()));
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => const EditProfilePage()));
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size(115, 45),

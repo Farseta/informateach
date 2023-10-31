@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:informateach/dosen/navbarConnected/add.dart';
 import 'package:informateach/dosen/navbarConnected/profile.dart';
 import 'package:informateach/dosen/navbarConnected/schedule.dart';
-import 'package:informateach/dosen/test.dart';
 // import 'package:informateach/main.dart';
 
 Uint8List? img;
@@ -42,7 +42,7 @@ class _MyAppDosenState extends State<MyAppDosen> {
         },
         children: const [
           ScheduleDosen(),
-          TestPage2(),
+          AddTicket(),
           ProfileDosen(),
         ],
       ),
