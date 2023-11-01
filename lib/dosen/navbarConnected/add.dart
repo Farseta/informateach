@@ -9,10 +9,38 @@ class AddTicket extends StatefulWidget {
   State<AddTicket> createState() => _AddTicketState();
 }
 
-DateTime _getMonday(DateTime date) {
+DateTime _getSunday(DateTime date) {
   int weekday = date.weekday;
   if (weekday == 7) return date;
   return date.subtract(Duration(days: weekday));
+}
+
+String _getDayName(String datePerWeek) {
+  switch (datePerWeek) {
+    case "1":
+      return "Monday";
+    case "2":
+      return "Tuesday";
+    case "3":
+      return "Wednesday";
+    case "4":
+      return "Thursday";
+    case "5":
+      return "Friday";
+    case "6":
+      return "Saturday";
+    case "7":
+      return "Sunday";
+    default:
+      return "Salah";
+  }
+}
+
+class SelectedTime {
+  final DateTime date;
+  final String time;
+
+  SelectedTime({required this.date, required this.time});
 }
 
 class _AddTicketState extends State<AddTicket> {
@@ -25,7 +53,7 @@ class _AddTicketState extends State<AddTicket> {
 
   @override
   Widget build(BuildContext context) {
-    final monday = _getMonday(_focusDate);
+    final sunday = _getSunday(_focusDate);
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -94,9 +122,9 @@ class _AddTicketState extends State<AddTicket> {
                 width: 80,
               ),
               controller: _controller,
-              firstDate: monday,
+              firstDate: sunday,
               focusDate: _focusDate,
-              lastDate: monday.add(const Duration(days: 6)),
+              lastDate: sunday.add(const Duration(days: 6)),
               showTimelineHeader: false,
               onDateChange: (selectedDate) {
                 setState(() {
@@ -126,8 +154,8 @@ class _AddTicketState extends State<AddTicket> {
                     side: const BorderSide(width: 1, color: Color(0xFFD9D9D9)),
                     borderRadius: BorderRadius.circular(7),
                   ),
-                  shadows: [
-                    const BoxShadow(
+                  shadows: const [
+                    BoxShadow(
                       color: Color(0x3F000000),
                       blurRadius: 4,
                       offset: Offset(0, 4),
@@ -136,7 +164,7 @@ class _AddTicketState extends State<AddTicket> {
                   ],
                 ),
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     childAspectRatio: 1.5,
                   ),
@@ -145,13 +173,39 @@ class _AddTicketState extends State<AddTicket> {
                   },
                   itemCount: availableTimes.length,
                 )),
-            SizedBox(
+            const SizedBox(
               height: 80,
             ),
             GestureDetector(
-              onTap: () => selectedTimes.forEach((element) {
-                print(element);
-              }),
+              // onTap: () => selectedTimes.forEach((element) {
+              //   print(element);
+              // }),
+              onTap: () {
+                // Map<String, List<String>> selectedTimesMap = {};
+                List<String> dates = [];
+                for (int i = 0; i < 7; i++) {
+                  dates.add(
+                      '${sunday.add(Duration(days: i)).weekday.toString()}, ${sunday.add(Duration(days: i)).toString()}');
+                }
+                dates.forEach((date) {
+                  List<String> dateSplit = date.split(", ");
+                  String week = _getDayName(dateSplit[0]);
+                  String day = dateSplit[1];
+                  print("Selected Times For $week");
+                  selectedTimes.forEach((time) {
+                    List<String> timeSplit = time.split(",");
+                    String dateNow = timeSplit[0];
+                    String timeNow = timeSplit[1];
+                    if (dateNow == day) {
+                      print(timeNow);
+                    }
+                  });
+
+                  // if (element.contains("${_focusDate}")) {
+                  //   print(sunday.add(Duration(days: 0)));
+                  // }
+                });
+              },
               child: Container(
                   width: 329,
                   height: 45,
@@ -161,7 +215,7 @@ class _AddTicketState extends State<AddTicket> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       "SAVE",
                       style: TextStyle(

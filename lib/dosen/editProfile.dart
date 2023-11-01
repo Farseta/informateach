@@ -20,6 +20,13 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
       _genderController,
       _emailController;
 
+  void saveChanges() {
+    dosenNow["Name"] = _nameController.text;
+    dosenNow["Phone"] = _phoneController.text;
+    dosenNow["Gender"] = _genderController.text;
+    dosenNow["NIP"] = _nipController.text;
+  }
+
   void selectImage() async {
     Uint8List selectedImg = await pickImage(ImageSource.gallery);
     setState(() {
@@ -74,6 +81,14 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
                           ),
                         ),
                       ),
+                Positioned(
+                  child: IconButton(
+                    icon: const Icon(Icons.add_a_photo),
+                    onPressed: selectImage,
+                  ),
+                  bottom: -10,
+                  right: 4,
+                )
               ],
             ),
 
@@ -194,9 +209,21 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
                 )),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 22),
-              child: TextField(
-                controller: _genderController,
-                enabled: true,
+              child: DropdownButtonFormField(
+                value: _genderController.text,
+                items: ['Male', 'Female'].map((String gender) {
+                  return DropdownMenuItem(
+                    value: gender,
+                    child: Text(gender),
+                  );
+                }).toList(),
+                onChanged: (String? value) {
+                  if (value != null) {
+                    setState(() {
+                      _genderController.text = value;
+                    });
+                  }
+                },
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),
@@ -211,10 +238,12 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => const EditProfilePage()));
+                    saveChanges();
+                    Navigator.pop(context);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => MyAppDosen(initialPage: 2)));
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size(115, 45),
@@ -223,7 +252,7 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
                         borderRadius: BorderRadius.circular(100),
                       )),
                   child: const Text(
-                    "Edit Profile",
+                    "Save",
                     style: TextStyle(
                       fontFamily: 'Quicksand',
                       fontSize: 15,
@@ -232,8 +261,7 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Navigator.push(context,
-                    //     MaterialPageRoute(builder: (context) => LoginPage()));
+                    Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(115, 45),
@@ -243,7 +271,7 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
                     ),
                   ),
                   child: const Text(
-                    "Log Out",
+                    "Cancel",
                     style: TextStyle(
                       fontFamily: 'Quicksand',
                       fontSize: 15,
