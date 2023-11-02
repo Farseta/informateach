@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
+import 'package:informateach/dosen/confirmSchedule.dart';
 import 'package:informateach/dosen/navbarConnected/profile.dart';
 
 class AddTicket extends StatefulWidget {
@@ -177,34 +178,36 @@ class _AddTicketState extends State<AddTicket> {
               height: 80,
             ),
             GestureDetector(
-              // onTap: () => selectedTimes.forEach((element) {
-              //   print(element);
-              // }),
               onTap: () {
-                // Map<String, List<String>> selectedTimesMap = {};
+                Map<String, List<String>?> selectedTimesMap = {};
                 List<String> dates = [];
                 for (int i = 0; i < 7; i++) {
+                  String selectedDate = DateTime.utc(
+                          sunday.add(Duration(days: i)).year,
+                          sunday.add(Duration(days: i)).month,
+                          sunday.add(Duration(days: i)).day)
+                      .toString();
                   dates.add(
-                      '${sunday.add(Duration(days: i)).weekday.toString()}, ${sunday.add(Duration(days: i)).toString()}');
+                      '${sunday.add(Duration(days: i)).weekday.toString()}, $selectedDate');
                 }
                 dates.forEach((date) {
                   List<String> dateSplit = date.split(", ");
-                  String week = _getDayName(dateSplit[0]);
                   String day = dateSplit[1];
-                  print("Selected Times For $week");
+                  selectedTimesMap[day] = [];
                   selectedTimes.forEach((time) {
-                    List<String> timeSplit = time.split(",");
+                    List<String> timeSplit = time.split(", ");
                     String dateNow = timeSplit[0];
                     String timeNow = timeSplit[1];
                     if (dateNow == day) {
-                      print(timeNow);
+                      selectedTimesMap[day]?.add(timeNow);
                     }
                   });
-
-                  // if (element.contains("${_focusDate}")) {
-                  //   print(sunday.add(Duration(days: 0)));
-                  // }
                 });
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ConfirmSchedule()));
+                scheduleFixed = selectedTimesMap;
+                // print(scheduleFixed["2023-11-02 00:00:00.000Z"] == null);
+                // print(selectedTimesMap);
               },
               child: Container(
                   width: 329,
@@ -234,16 +237,19 @@ class _AddTicketState extends State<AddTicket> {
   }
 
   Widget _buildTimeTile(String time) {
-    bool isSelected = selectedTimes.contains('${_focusDate}, ${time}');
+    bool isSelected = selectedTimes.contains(
+        '${DateTime.utc(_focusDate.year, _focusDate.month, _focusDate.day)}, ${time}');
 
     return GestureDetector(
         onTap: () {
           setState(() {
             setState(() {
               if (isSelected) {
-                selectedTimes.remove('${_focusDate}, ${time}');
+                selectedTimes.remove(
+                    '${DateTime.utc(_focusDate.year, _focusDate.month, _focusDate.day)}, ${time}');
               } else {
-                selectedTimes.add('${_focusDate}, ${time}');
+                selectedTimes.add(
+                    '${DateTime.utc(_focusDate.year, _focusDate.month, _focusDate.day)}, ${time}');
               }
             });
           });
