@@ -7,7 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/cancelTicketDialog.dart';
+import 'package:informateach/dosen/landingPage.dart';
 import 'package:informateach/utils.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 Map userNow = {
   "Gambar": "style/img/testUser/png",
@@ -24,7 +27,12 @@ Uint8List? _image;
 late bool showBottomNavBar;
 late String idDosen;
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -128,10 +136,16 @@ class LoginPage extends StatelessWidget {
             const SizedBox(height: 15),
             ElevatedButton(
               onPressed: () {
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (context) => const MyAppMahasiswa(
+                //               initialPage: 0,
+                //             )));
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MyAppMahasiswa(
+                        builder: (context) => MyAppDosen(
                               initialPage: 0,
                             )));
               },
