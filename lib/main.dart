@@ -1,13 +1,15 @@
-// ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api
+// ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api, prefer_const_constructors
 
 import 'dart:typed_data';
 
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:informateach/auth/auth.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/cancelTicketDialog.dart';
-import 'package:informateach/dosen/landingPage.dart';
 import 'package:informateach/utils.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -22,10 +24,55 @@ Map userNow = {
   "Gambar": _image,
 };
 
+late Map<String, dynamic> currentUser;
 Uint8List? _image;
 // late bool showBottomNavBar;
 late bool showBottomNavBar;
 late String idDosen;
+User? user = FirebaseAuth.instance.currentUser;
+
+Future getCurrentUser() async {
+  try {
+    var userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('Email', isEqualTo: user?.email)
+        .get();
+
+    if (userQuery.docs.isNotEmpty) {
+      var userData = userQuery.docs.first.data();
+      currentUser = userData;
+    } else {
+      print("data kosong");
+    }
+  } catch (e) {
+    print(e);
+  }
+}
+
+Future editCurrentUserProfile(
+    String name, String phone, String gender, String nim) async {
+  try {
+    var userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('Email', isEqualTo: user?.email)
+        .get();
+    if (userQuery.docs.isNotEmpty) {
+      var userDocument =
+          userQuery.docs.first.reference; // Mendapatkan referensi dokumen
+      await userDocument.update({
+        'Name': name,
+        'Phone Number': phone,
+        'Gender': gender,
+        'NIM': nim,
+      });
+      print('Profil pengguna berhasil diperbarui.');
+    } else {
+      print("Data kosong");
+    }
+  } catch (e) {
+    print(e);
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,372 +89,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: LoginPage(), // Memulai dengan halaman Sign In
+      debugShowCheckedModeBanner: false,
+      home: Auth(),
     );
-  }
-}
-
-class LoginPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Login',
-              style: TextStyle(
-                fontFamily: 'Quicksand',
-                fontSize: 35,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Text(
-              'Hi! Welcome back, you have been missed',
-              style: TextStyle(
-                fontFamily: 'Quicksand',
-                fontSize: 15,
-              ),
-            ),
-            const SizedBox(height: 45),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Username',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Insert your username!',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Password',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Insert your password!',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(right: 42.5),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    print('Forgot Password Function');
-                  },
-                  child: const Text(
-                    'Forgot Password?',
-                    style: TextStyle(fontFamily: 'Quicksand', fontSize: 15),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: () {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (context) => const MyAppMahasiswa(
-                //               initialPage: 0,
-                //             )));
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MyAppDosen(
-                              initialPage: 0,
-                            )));
-              },
-              style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(
-                      left: 80, right: 80, top: 10, bottom: 10),
-                  backgroundColor: const Color.fromRGBO(39, 55, 77, 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  )),
-              child: const Text(
-                'Login',
-                style: TextStyle(fontFamily: 'Quicksand', fontSize: 20),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: Row(
-                children: [
-                  const Text(
-                    'Do not have an account?',
-                    style: TextStyle(fontFamily: 'Quicksand', fontSize: 15),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => RegisterPage()));
-                    },
-                    child: const Text(
-                      'Register',
-                      style: TextStyle(fontFamily: 'Quicksand', fontSize: 15),
-                    ),
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class RegisterPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: SingleChildScrollView(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 135),
-              child: const Text(
-                'Register',
-                style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontSize: 35,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Text(
-              'Fill your information below',
-              style: TextStyle(
-                fontFamily: 'Quicksand',
-                fontSize: 15,
-              ),
-            ),
-            const SizedBox(height: 45),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Name',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Insert your name!',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'NIM',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Insert your NIM!',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Phone Number',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Insert your phone number!',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Username',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Insert your new username!',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Password',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Insert your new password!',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Confirm Password',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 17,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5, right: 42.5),
-              child: const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Confirm your new password!',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                print('Sign In Function');
-              },
-              style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(
-                      left: 80, right: 80, top: 10, bottom: 10),
-                  backgroundColor: const Color.fromRGBO(39, 55, 77, 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  )),
-              child: const Text(
-                'Register',
-                style: TextStyle(fontFamily: 'Quicksand', fontSize: 20),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              margin: const EdgeInsets.only(left: 42.5),
-              child: Row(
-                children: [
-                  const Text(
-                    'Do you have an account?',
-                    style: TextStyle(fontFamily: 'Quicksand', fontSize: 15),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => LoginPage()));
-                    },
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(fontFamily: 'Quicksand', fontSize: 15),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(
-              height: 135,
-            ),
-          ],
-        ),
-      ),
-    ));
   }
 }
 
@@ -1090,7 +774,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   void saveChanges() {
-    userNow["Name"] = _nameController.text;
+    currentUser["Name"] = _nameController.text;
     userNow["Phone"] = _phoneController.text;
     userNow["Gender"] = _genderController.text;
   }
@@ -1103,13 +787,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void initState() {
     super.initState();
 
-    _nameController = TextEditingController(text: userNow["Nama"]!);
-    _phoneController = TextEditingController(text: userNow["Phone"]!);
-    _genderController = TextEditingController(text: userNow["Gender"]!);
+    _nameController = TextEditingController(text: currentUser["Name"]!);
+    _phoneController =
+        TextEditingController(text: currentUser["Phone Number"]!);
+    _genderController = TextEditingController(text: "Pria");
   }
 
   @override
   Widget build(BuildContext context) {
+    getCurrentUser();
     return Scaffold(
         body: SingleChildScrollView(
       child: Column(
@@ -1254,15 +940,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
             children: [
               ElevatedButton(
                 onPressed: () {
+                  editCurrentUserProfile(_nameController.text.trim(),
+                      _phoneController.text.trim(), "", "");
                   Navigator.pop(context);
-                  Navigator.pop(context);
-                  saveChanges();
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const MyAppMahasiswa(initialPage: 2),
-                      ));
                 },
                 style: ElevatedButton.styleFrom(
                     minimumSize: const Size(115, 45),
@@ -1324,13 +1004,15 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     // Inisialisasi controller dengan nilai dari database atau sesuai kebutuhan
-    _nameController = TextEditingController(text: userNow["Nama"]!);
-    _phoneController = TextEditingController(text: userNow["Phone"]!);
-    _genderController = TextEditingController(text: userNow["Gender"]!);
+    _nameController = TextEditingController(text: currentUser["Name"]!);
+    _phoneController =
+        TextEditingController(text: currentUser["Phone Number"]!);
+    _genderController = TextEditingController(text: "Default");
   }
 
   @override
   Widget build(BuildContext context) {
+    getCurrentUser();
     return Scaffold(
         body: SingleChildScrollView(
       child: Column(
@@ -1477,8 +1159,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => LoginPage()));
+                  FirebaseAuth.instance.signOut();
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(115, 45),

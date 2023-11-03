@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:informateach/dosen/editProfile.dart';
@@ -241,8 +242,8 @@ class _ProfileDosenState extends State<ProfileDosen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Navigator.push(context,
-                    //     MaterialPageRoute(builder: (context) => LoginPage()));
+                    print(FirebaseAuth.instance.currentUser?.email);
+                    FirebaseAuth.instance.signOut();
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(115, 45),

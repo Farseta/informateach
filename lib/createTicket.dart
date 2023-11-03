@@ -1,5 +1,7 @@
 // import 'dart:js_util';
 
+// ignore_for_file: file_names, prefer_final_fields
+
 import 'package:flutter/material.dart';
 import 'package:informateach/confirmTicket.dart';
 import 'package:informateach/main.dart';
