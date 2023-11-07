@@ -131,6 +131,7 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
 
   @override
   Widget build(BuildContext context) {
+    getCurrentUser();
     return Scaffold(
         body: PageView(
           controller: _pageController,
@@ -795,7 +796,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    getCurrentUser();
     return Scaffold(
         body: SingleChildScrollView(
       child: Column(
@@ -993,26 +993,19 @@ class _ProfilePageState extends State<ProfilePage> {
       _phoneController,
       _genderController;
   final bool _isEditing = false;
-  void selectImage() async {
-    Uint8List img = await pickImage(ImageSource.gallery);
-    setState(() {
-      _image = img;
-    });
-  }
 
   @override
   void initState() {
     super.initState();
     // Inisialisasi controller dengan nilai dari database atau sesuai kebutuhan
-    _nameController = TextEditingController(text: currentUser["Name"]!);
-    _phoneController =
-        TextEditingController(text: currentUser["Phone Number"]!);
-    _genderController = TextEditingController(text: "Default");
+    _nameController = TextEditingController(text: currentUser['Name']);
+    _phoneController = TextEditingController(text: currentUser['Phone Number']);
+    _genderController = TextEditingController(
+        text: currentUser['Gender'] == '' ? 'Kosong' : currentUser['Gender']);
   }
 
   @override
   Widget build(BuildContext context) {
-    getCurrentUser();
     return Scaffold(
         body: SingleChildScrollView(
       child: Column(
