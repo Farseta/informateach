@@ -1,10 +1,12 @@
 // ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api, prefer_const_constructors
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:informateach/auth/auth.dart';
@@ -49,8 +51,8 @@ Future getCurrentUser() async {
   }
 }
 
-Future editCurrentUserProfile(
-    String name, String phone, String gender, String nim) async {
+Future<bool> editCurrentUserProfile(
+    String name, String phone, String gender, String nim, String img) async {
   try {
     var userQuery = await FirebaseFirestore.instance
         .collection('users')
@@ -64,13 +66,15 @@ Future editCurrentUserProfile(
         'Phone Number': phone,
         'Gender': gender,
         'NIM': nim,
+        'Image': img,
       });
-      print('Profil pengguna berhasil diperbarui.');
+      return true;
     } else {
-      print("Data kosong");
+      return false;
     }
   } catch (e) {
     print(e);
+    return false;
   }
 }
 
@@ -774,10 +778,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
   }
 
-  void saveChanges() {
-    currentUser["Name"] = _nameController.text;
-    userNow["Phone"] = _phoneController.text;
-    userNow["Gender"] = _genderController.text;
+  Future<String> uploadProfilePict(Uint8List image) async {
+    Reference ref =
+        FirebaseStorage.instance.ref().child('userProfilePict/${user?.email}');
+    UploadTask upload = ref.putData(image);
+    TaskSnapshot snapshot = await upload;
+    String imageUrl = await snapshot.ref.getDownloadURL();
+    return imageUrl;
+  }
+
+  void saveChanges() async {
+    String img = await uploadProfilePict(_image!);
+    bool done = await editCurrentUserProfile(_nameController.text,
+        _phoneController.text, _genderController.text, "21051204033", img);
+    if (done) {
+      Navigator.pop(context);
+    }
   }
 
   void cancelEdit() {
@@ -940,9 +956,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  editCurrentUserProfile(_nameController.text.trim(),
-                      _phoneController.text.trim(), "", "");
-                  Navigator.pop(context);
+                  saveChanges();
                 },
                 style: ElevatedButton.styleFrom(
                     minimumSize: const Size(115, 45),
@@ -1019,12 +1033,12 @@ class _ProfilePageState extends State<ProfilePage> {
               )),
           Stack(
             children: [
-              _image != null
+              currentUser['Image'] != ''
                   ? Container(
                       margin: const EdgeInsets.only(top: 44),
                       child: ClipOval(
-                        child: Image.memory(
-                          _image!,
+                        child: Image.network(
+                          currentUser['Image']!,
                           height: 180,
                           width: 180,
                           fit: BoxFit.cover,
