@@ -2,8 +2,11 @@
 
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/dosen/landingPage.dart';
 import 'package:informateach/dosen/navbarConnected/profile.dart';
 import 'package:informateach/utils.dart';
@@ -16,17 +19,59 @@ class EditProfileDosen extends StatefulWidget {
 }
 
 class _EditProfileDosenState extends State<EditProfileDosen> {
+  Future<bool> editCurrentUserProfile(
+      String name, String phone, String gender, String nim, String img) async {
+    try {
+      var dosenQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('Email', isEqualTo: user?.email)
+          .get();
+      if (dosenQuery.docs.isNotEmpty) {
+        var userDocument =
+            dosenQuery.docs.first.reference; // Mendapatkan referensi dokumen
+        await userDocument.update({
+          'Name': name,
+          'Phone Number': phone,
+          'Gender': gender,
+          'NIM': nim,
+          'Image': img,
+        });
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future<String> uploadProfilePict(Uint8List image) async {
+    Reference ref =
+        FirebaseStorage.instance.ref().child('userProfilePict/${user?.email}');
+    UploadTask upload = ref.putData(image);
+    TaskSnapshot snapshot = await upload;
+    String imageUrl = await snapshot.ref.getDownloadURL();
+    return imageUrl;
+  }
+
   late TextEditingController _nameController,
       _phoneController,
       _nipController,
       _genderController,
       _emailController;
 
-  void saveChanges() {
-    dosenNow["Name"] = _nameController.text;
-    dosenNow["Phone"] = _phoneController.text;
-    dosenNow["Gender"] = _genderController.text;
-    dosenNow["NIP"] = _nipController.text;
+  void saveChanges() async {
+    String imgLink = await uploadProfilePict(img!);
+    bool done = await editCurrentUserProfile(
+        _nameController.text,
+        _phoneController.text,
+        _genderController.text,
+        _nipController.text,
+        imgLink);
+    if (done) {
+      Navigator.pop(context);
+    }
   }
 
   void selectImage() async {
@@ -39,15 +84,18 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController(text: dosenNow["Email"]);
-    _nameController = TextEditingController(text: dosenNow["Name"]);
-    _nipController = TextEditingController(text: dosenNow["NIP"]);
-    _phoneController = TextEditingController(text: dosenNow["Phone"]);
-    _genderController = TextEditingController(text: dosenNow["Gender"]);
+    _emailController = TextEditingController(text: currentDosen["Email"]);
+    _nameController = TextEditingController(text: currentDosen["Name"]);
+    _nipController = TextEditingController(text: currentDosen["NIM"]);
+    _phoneController =
+        TextEditingController(text: currentDosen["Phone Number"]);
+    _genderController =
+        TextEditingController(text: currentDosen["Gender"] ?? 'Male');
   }
 
   @override
   Widget build(BuildContext context) {
+    getCurrentDosen();
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -241,11 +289,6 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
                 ElevatedButton(
                   onPressed: () {
                     saveChanges();
-                    Navigator.pop(context);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => MyAppDosen(initialPage: 2)));
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size(115, 45),

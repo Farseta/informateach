@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:informateach/dosen/confirmSchedule.dart';
+import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/dosen/navbarConnected/profile.dart';
 
 class AddTicket extends StatefulWidget {
@@ -54,6 +55,7 @@ class _AddTicketState extends State<AddTicket> {
 
   @override
   Widget build(BuildContext context) {
+    print(currentDosen["Email"]);
     final sunday = _getSunday(_focusDate);
     return Scaffold(
       body: SingleChildScrollView(

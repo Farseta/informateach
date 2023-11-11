@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:informateach/auth/auth.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/cancelTicketDialog.dart';
+import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/utils.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -810,190 +811,198 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _genderController = TextEditingController(text: "Pria");
   }
 
+  Future<bool> _onBackPressed() async {
+    print('Tombol Back ditekan');
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-              margin: const EdgeInsets.only(left: 14, top: 11),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Image.asset('style/img/LogoInformateach.png'),
-              )),
-          Stack(
-            children: [
-              _image != null
-                  ? Container(
-                      margin: const EdgeInsets.only(top: 44),
-                      child: ClipOval(
-                        child: Image.memory(
-                          _image!,
+    return WillPopScope(
+      onWillPop: _onBackPressed,
+      child: Scaffold(
+          body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+                margin: const EdgeInsets.only(left: 14, top: 11),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Image.asset('style/img/LogoInformateach.png'),
+                )),
+            Stack(
+              children: [
+                _image != null
+                    ? Container(
+                        margin: const EdgeInsets.only(top: 44),
+                        child: ClipOval(
+                          child: Image.memory(
+                            _image!,
+                            height: 180,
+                            width: 180,
+                            fit: BoxFit.cover,
+                          ),
+                        ))
+                    : Container(
+                        margin: const EdgeInsets.only(top: 44),
+                        child: ClipOval(
+                            child: Image.asset(
+                          'style/img/DefaultIcon.png',
                           height: 180,
                           width: 180,
                           fit: BoxFit.cover,
-                        ),
-                      ))
-                  : Container(
-                      margin: const EdgeInsets.only(top: 44),
-                      child: ClipOval(
-                          child: Image.asset(
-                        'style/img/DefaultIcon.png',
-                        height: 180,
-                        width: 180,
-                        fit: BoxFit.cover,
-                      )),
+                        )),
+                      ),
+                Positioned(
+                  child: IconButton(
+                    icon: const Icon(Icons.add_a_photo),
+                    onPressed: selectImage,
+                  ),
+                  bottom: -10,
+                  right: 4,
+                )
+              ],
+            ),
+
+            //Name User Container
+            Container(
+                margin: const EdgeInsets.only(left: 28, top: 45),
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Name",
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 15,
                     ),
-              Positioned(
-                child: IconButton(
-                  icon: const Icon(Icons.add_a_photo),
-                  onPressed: selectImage,
-                ),
-                bottom: -10,
-                right: 4,
-              )
-            ],
-          ),
-
-          //Name User Container
-          Container(
-              margin: const EdgeInsets.only(left: 28, top: 45),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Name",
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 15,
                   ),
+                )),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 22),
+              child: TextField(
+                controller: _nameController,
+                enabled: _isEditing,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
                 ),
-              )),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 22),
-            child: TextField(
-              controller: _nameController,
-              enabled: _isEditing,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
               ),
             ),
-          ),
 
-          //Phone Number Container
-          const SizedBox(
-            height: 15,
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 28),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Phone Number",
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 15,
+            //Phone Number Container
+            const SizedBox(
+              height: 15,
+            ),
+            Container(
+                margin: const EdgeInsets.only(left: 28),
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Phone Number",
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 15,
+                    ),
                   ),
+                )),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 22),
+              child: TextField(
+                controller: _phoneController,
+                enabled: _isEditing,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
                 ),
-              )),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 22),
-            child: TextField(
-              controller: _phoneController,
-              enabled: _isEditing,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
               ),
             ),
-          ),
 
-          //Gender User Container
-          const SizedBox(
-            height: 15,
-          ),
-          Container(
-              margin: const EdgeInsets.only(left: 28),
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Gender",
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 15,
-                  ),
-                ),
-              )),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 22),
-            child: DropdownButtonFormField(
-              value: _genderController.text,
-              items: ['Pria', 'Wanita'].map((String gender) {
-                return DropdownMenuItem(
-                  value: gender,
-                  child: Text(gender),
-                );
-              }).toList(),
-              onChanged: (String? value) {
-                if (value != null) {
-                  setState(() {
-                    _genderController.text = value;
-                  });
-                }
-              },
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
+            //Gender User Container
+            const SizedBox(
+              height: 15,
             ),
-          ),
-          const SizedBox(
-            height: 68,
-          ),
-
-          //Save and Cancel Button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  saveChanges();
+            Container(
+                margin: const EdgeInsets.only(left: 28),
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Gender",
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 15,
+                    ),
+                  ),
+                )),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 22),
+              child: DropdownButtonFormField(
+                value: _genderController.text,
+                items: ['Pria', 'Wanita'].map((String gender) {
+                  return DropdownMenuItem(
+                    value: gender,
+                    child: Text(gender),
+                  );
+                }).toList(),
+                onChanged: (String? value) {
+                  if (value != null) {
+                    setState(() {
+                      _genderController.text = value;
+                    });
+                  }
                 },
-                style: ElevatedButton.styleFrom(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 68,
+            ),
+
+            //Save and Cancel Button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    saveChanges();
+                  },
+                  style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(115, 45),
+                      backgroundColor: const Color.fromRGBO(82, 109, 130, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100),
+                      )),
+                  child: const Text(
+                    "Save",
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => cancelEdit(),
+                  style: ElevatedButton.styleFrom(
                     minimumSize: const Size(115, 45),
-                    backgroundColor: const Color.fromRGBO(82, 109, 130, 1),
+                    backgroundColor: const Color.fromRGBO(39, 55, 77, 1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),
-                    )),
-                child: const Text(
-                  "Save",
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 15,
+                    ),
                   ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () => cancelEdit(),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(115, 45),
-                  backgroundColor: const Color.fromRGBO(39, 55, 77, 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 15,
+                    ),
                   ),
-                ),
-                child: const Text(
-                  "Cancel",
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontSize: 15,
-                  ),
-                ),
-              )
-            ],
-          )
-        ],
-      ),
-    ));
+                )
+              ],
+            )
+          ],
+        ),
+      )),
+    );
   }
 }
 
@@ -1020,6 +1029,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    getCurrentUser();
     return Scaffold(
         body: SingleChildScrollView(
       child: Column(

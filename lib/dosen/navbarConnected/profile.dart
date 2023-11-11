@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/dosen/editProfile.dart';
 import 'package:informateach/dosen/landingPage.dart';
 import 'package:informateach/utils.dart';
@@ -29,25 +30,23 @@ class _ProfileDosenState extends State<ProfileDosen> {
       _genderController,
       _emailController;
 
-  void selectImage() async {
-    Uint8List selectedImg = await pickImage(ImageSource.gallery);
-    setState(() {
-      img = selectedImg;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController(text: dosenNow["Email"]);
-    _nameController = TextEditingController(text: dosenNow["Name"]);
-    _nipController = TextEditingController(text: dosenNow["NIP"]);
-    _phoneController = TextEditingController(text: dosenNow["Phone"]);
-    _genderController = TextEditingController(text: dosenNow["Gender"]);
+    _emailController = TextEditingController(text: currentDosen["Email"]);
+    _nameController = TextEditingController(text: currentDosen["Name"]);
+    _nipController = TextEditingController(text: currentDosen["NIM"]);
+    _phoneController =
+        TextEditingController(text: currentDosen["Phone Number"]);
+    _genderController = TextEditingController(
+        text: currentDosen["Gender"] == null
+            ? 'Mohon Diisi'
+            : currentDosen['Gender']);
   }
 
   @override
   Widget build(BuildContext context) {
+    getCurrentDosen();
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -61,12 +60,12 @@ class _ProfileDosenState extends State<ProfileDosen> {
                 )),
             Stack(
               children: [
-                img != null
+                currentDosen['Image'] != null
                     ? Container(
                         margin: const EdgeInsets.only(top: 44),
                         child: ClipOval(
-                          child: Image.memory(
-                            img!,
+                          child: Image.network(
+                            currentDosen['Image']!,
                             height: 180,
                             width: 180,
                             fit: BoxFit.cover,
