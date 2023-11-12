@@ -210,15 +210,44 @@ class HomepageMahasiswa extends StatefulWidget {
   _HomepageMahasiswaState createState() => _HomepageMahasiswaState();
 }
 
+Future<List<Map<String, dynamic>>> getListDosen() async {
+  final CollectionReference dosenCollection =
+      FirebaseFirestore.instance.collection('users');
+
+  QuerySnapshot<Object?> querySnapshot =
+      await dosenCollection.where('Student', isEqualTo: false).get();
+
+  List<Map<String, dynamic>> dosenList = [];
+  querySnapshot.docs.forEach((doc) {
+    dosenList.add(doc.data() as Map<String, dynamic>);
+  });
+
+  return dosenList;
+}
+
 class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
-  final List<Map<String, String>> listDosen = [
-    for (int i = 1; i <= 10; i++)
-      {
-        "Gambar": "style/img/testDosen1.png",
-        "Nama": "Nama Dosen $i",
-        "NIDM": "NIDM Dosen $i",
-      }
-  ];
+  // final List<Map<String, dynamic>> listDosen = [
+  //   for (int i = 1; i <= 10; i++)
+  //     {
+  //       "Gambar": "style/img/testDosen1.png",
+  //       "Nama": "Nama Dosen $i",
+  //       "NIDM": "NIDM Dosen $i",
+  //     }
+  // ];
+  late List<Map<String, dynamic>> listDosen = [];
+
+  Future<void> fetchDosenList() async {
+    List<Map<String, dynamic>> dosen = await getListDosen();
+    setState(() {
+      listDosen = dosen;
+    });
+  }
+
+  void initState() {
+    super.initState();
+    fetchDosenList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -266,7 +295,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          idDosen = data["NIDM"]!;
+                          idDosen = data["Email"]!;
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -278,6 +307,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                           height: 140,
                           margin: const EdgeInsets.symmetric(
                               horizontal: 50, vertical: 15),
+                          padding: const EdgeInsets.only(right: 20),
                           decoration: BoxDecoration(
                             color: const Color.fromRGBO(39, 55, 77, 1),
                             borderRadius: BorderRadius.circular(20),
@@ -292,34 +322,38 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                           ),
                           child: Row(
                             children: [
-                              Image.asset(
-                                data["Gambar"]!,
+                              Image.network(
+                                data["Image"]!,
                                 width: 101,
                                 height: 138,
                                 fit: BoxFit.cover,
                               ),
                               const SizedBox(width: 20),
-                              Center(
+                              Expanded(
                                 child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      margin: const EdgeInsets.only(top: 38),
-                                      child: Text(
-                                        data["Nama"]!,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontFamily: 'Quicksand',
-                                        ),
-                                      ),
-                                    ),
                                     Text(
-                                      data["NIDM"]!,
+                                      data["Name"]!,
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontFamily: 'Quicksand',
                                       ),
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 3,
+                                    ),
+                                    Text(
+                                      data["NIM"],
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontFamily: 'Quicksand',
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
                                     ),
                                   ],
                                 ),
@@ -333,7 +367,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 } else if (index == listDosen.length - 1) {
                   return GestureDetector(
                       onTap: () {
-                        idDosen = data["NIDM"]!;
+                        idDosen = data["Email"]!;
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -358,8 +392,8 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         ),
                         child: Row(
                           children: [
-                            Image.asset(
-                              data["Gambar"]!,
+                            Image.network(
+                              data["Image"]!,
                               width: 101,
                               height: 138,
                               fit: BoxFit.cover,
@@ -371,21 +405,27 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                                   Container(
                                     margin: const EdgeInsets.only(top: 38),
                                     child: Text(
-                                      data["Nama"]!,
+                                      data["Name"]!,
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontFamily: 'Quicksand',
                                       ),
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
                                     ),
                                   ),
                                   Text(
-                                    data["NIDM"]!,
+                                    data["NIM"]!,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 15,
                                       fontFamily: 'Quicksand',
                                     ),
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
                                   ),
                                 ],
                               ),
@@ -396,7 +436,7 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                 } else {
                   return GestureDetector(
                       onTap: () {
-                        idDosen = data["NIDM"]!;
+                        idDosen = data["Email"]!;
                         setState(() {
                           showBottomNavBar = false;
                         });
@@ -424,8 +464,8 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         ),
                         child: Row(
                           children: [
-                            Image.asset(
-                              data["Gambar"]!,
+                            Image.network(
+                              data["Image"]!,
                               width: 101,
                               height: 138,
                               fit: BoxFit.cover,
@@ -437,21 +477,27 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                                   Container(
                                     margin: const EdgeInsets.only(top: 38),
                                     child: Text(
-                                      data["Nama"]!,
+                                      data["Name"]!,
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontFamily: 'Quicksand',
                                       ),
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
                                     ),
                                   ),
                                   Text(
-                                    data["NIDM"]!,
+                                    data["NIM"]!,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 15,
                                       fontFamily: 'Quicksand',
                                     ),
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
                                   ),
                                 ],
                               ),
@@ -477,25 +523,53 @@ class AboutDosen extends StatefulWidget {
   State<AboutDosen> createState() => _AboutDosenState();
 }
 
+// Future<Map<String, dynamic>> getSelectedDosen(String email) async {
+//   try {
+//     var dosenQuery = await FirebaseFirestore.instance
+//         .collection('users')
+//         .where('Email', isEqualTo: email)
+//         .get();
+
+//     if (dosenQuery.docs.isNotEmpty) {
+//       Map<String, dynamic> dosenData = dosenQuery.docs.first.data();
+//       return dosenData;
+//     } else {
+//       throw Exception("No Dosen Found");
+//     }
+//   } catch (e) {
+//     print(e);
+//     rethrow;
+//   }
+// }
+
 class _AboutDosenState extends State<AboutDosen> {
   String idDosenNow = idDosen;
-  late Map selectedDosen;
+  Map<String, dynamic> selectedDosen = {'temp': 'temp'};
+  Future<void> fetchSelectedDosen() async {
+    Map<String, dynamic> selectedDosenTmp = await getSelectedDosen(idDosen);
+    setState(() {
+      selectedDosen = selectedDosenTmp;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    selectedDosen = {
-      "Gambar": "style/img/testDosen1.png",
-      "Nama": "Nama Dosen $idDosen",
-      "Prodi": "Prodi Dosen $idDosen",
-      "NIP": "NIP Dosen $idDosen",
-      "NIDN": "NIDN Dosen $idDosen",
-      "Email": "Email Dosen $idDosen",
-    };
+    fetchSelectedDosen();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (selectedDosen['temp'] == 'temp') {
+      return Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white10,
+          iconTheme: const IconThemeData(color: Colors.black),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -517,11 +591,11 @@ class _AboutDosenState extends State<AboutDosen> {
             child: Center(
                 child: Column(
           children: [
-            Image.asset(
-              selectedDosen["Gambar"]!,
+            Image.network(
+              selectedDosen["Image"]!,
               width: 113.82,
               height: 163,
-              fit: BoxFit.fill,
+              fit: BoxFit.cover,
             ),
             const SizedBox(
               height: 19,
@@ -547,7 +621,7 @@ class _AboutDosenState extends State<AboutDosen> {
                 child: Align(
                   alignment: Alignment.center,
                   child: Text(
-                    selectedDosen["Nama"],
+                    selectedDosen["Name"],
                     style: const TextStyle(
                       fontFamily: 'Quicksand',
                       fontSize: 15,
@@ -642,7 +716,9 @@ class _AboutDosenState extends State<AboutDosen> {
               ),
               child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(selectedDosen["Prodi"]!)),
+                  child: Text(selectedDosen["Prodi"] == null
+                      ? 'Kosong'
+                      : selectedDosen["Prodi"])),
             ),
             const SizedBox(
               height: 18,
@@ -679,7 +755,7 @@ class _AboutDosenState extends State<AboutDosen> {
               ),
               child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(selectedDosen["NIP"]!)),
+                  child: Text(selectedDosen["NIM"]!)),
             ),
             const SizedBox(
               height: 18,
@@ -716,7 +792,9 @@ class _AboutDosenState extends State<AboutDosen> {
               ),
               child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(selectedDosen["NIDN"]!)),
+                  child: Text(selectedDosen["NIDN"] == null
+                      ? 'Kosong'
+                      : selectedDosen["NIDN"])),
             ),
             const SizedBox(
               height: 18,

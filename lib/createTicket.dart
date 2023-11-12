@@ -2,6 +2,7 @@
 
 // ignore_for_file: file_names, prefer_final_fields
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:informateach/confirmTicket.dart';
 import 'package:informateach/main.dart';
@@ -11,12 +12,50 @@ String? finalSelectedTime;
 String? finalPurpose;
 String dosen = idDosen;
 
-enum Days {
-  mon,
-  tue,
-  wed,
-  thu,
-  fri,
+Future<Map<String, dynamic>> getSelectedDosen(String email) async {
+  try {
+    var dosenQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('Email', isEqualTo: email)
+        .get();
+
+    if (dosenQuery.docs.isNotEmpty) {
+      Map<String, dynamic> dosenData = dosenQuery.docs.first.data();
+      return dosenData;
+    } else {
+      throw Exception("No Dosen Found");
+    }
+  } catch (e) {
+    print(e);
+    rethrow;
+  }
+}
+
+Future<List<String>> getDosenSchedule(String day) async {
+  final CollectionReference dosenScheduleCollection =
+      FirebaseFirestore.instance.collection('tickets');
+
+  // Ganti 'day' dengan field yang sesuai dengan struktur dokumen Firestore
+  QuerySnapshot<Object?> querySnapshot = await dosenScheduleCollection
+      .where('day', isEqualTo: day)
+      // .where('dosen', isEqualTo: 'christianozetroabsinaga@gmail.com')
+      .get();
+
+  List<String> timeList = [];
+
+  querySnapshot.docs.forEach((doc) {
+    String time = doc['time'];
+    String status;
+    if (doc['available'] == true) {
+      status = "AVAILABLE";
+    } else {
+      status = "BOOKED";
+    }
+
+    timeList.add('$time        $status');
+  });
+
+  return timeList;
 }
 
 class CreateTicket extends StatefulWidget {
@@ -26,71 +65,91 @@ class CreateTicket extends StatefulWidget {
   State<CreateTicket> createState() => _CreateTicketState();
 }
 
+String getDayName(String date) {
+  int weekDayNumber = DateTime.parse(date).weekday;
+  switch (weekDayNumber) {
+    case 1:
+      return "Mon";
+    case 2:
+      return "Tue";
+    case 3:
+      return "Wed";
+    case 4:
+      return "Thur";
+    case 5:
+      return "Fri";
+    case 6:
+      return "Sat";
+    case 7:
+      return "Sun";
+    default:
+      return "null";
+  }
+}
+
 class _CreateTicketState extends State<CreateTicket> {
   String idDosenNow = idDosen;
-  late Map selectedDosen;
-  late Map<String, List<String>> dosenSchedule;
-  String selectedDay = "Mon";
+  Map<String, dynamic> selectedDosen = {'temp': "temp"};
+  late List<String> dosenSchedule;
+
+  String selectedDay =
+      "${DateTime.utc(DateTime.now().year, DateTime.now().month, DateTime.now().day)}";
   String? selectedTime;
   TextEditingController _purposeController = TextEditingController();
+  List<String> dosenScheduleList = [];
+
+  Future<void> fetchDosenSchedule() async {
+    List<String> schedule = await getDosenSchedule(selectedDay);
+    setState(() {
+      dosenScheduleList = schedule;
+    });
+  }
+
+  Future<void> fetchSelectedDosen() async {
+    Map<String, dynamic> selectedDosenTmp = await getSelectedDosen(idDosen);
+    setState(() {
+      selectedDosen = selectedDosenTmp;
+    });
+  }
+
+  DateTime _getSunday(DateTime date) {
+    int weekday = date.weekday;
+    if (weekday == 7) return date;
+    return date.subtract(Duration(days: weekday));
+  }
+
+  List<String> getCurrentWeek() {
+    List<String> currentWeek = [];
+    var now = DateTime.utc(
+        DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    var sunday = _getSunday(now);
+    for (int i = 0; i < 7; i++) {
+      currentWeek.add(sunday.add(Duration(days: i)).toString());
+    }
+    return currentWeek;
+  }
 
   @override
   void initState() {
     super.initState();
-    selectedDosen = {
-      "Gambar": "style/img/testDosen1.png",
-      "Nama": "Nama Dosen $idDosen",
-      "Prodi": "Prodi Dosen $idDosen",
-      "NIP": "NIP Dosen $idDosen",
-      "NIDN": "NIDN Dosen $idDosen",
-      "Email": "Email Dosen $idDosen",
-    };
-    dosenSchedule = {
-      "Mon": [
-        "07.00        Available",
-        "08.00        Booked",
-        "09.00        Booked",
-        "10.00        Available",
-        "11.00        Available",
-        "12.00        Booked",
-      ],
-      "Tue": [
-        "10.00        Available",
-        "11.00        Available",
-        "12.00        Booked",
-        "13.00        Booked",
-        "14.00        Available",
-        "15.00        Available",
-      ],
-      "Wed": [
-        "13.00        Booked",
-        "14.00        Booked",
-        "15.00        Booked",
-        "07.00        Booked",
-        "08.00        Available",
-        "09.00        Available",
-      ],
-      "Thu": [
-        "07.00        Available",
-        "08.00        Available",
-        "09.00        Booked",
-        "10.00        Booked",
-        "11.00        Available",
-        "12.00        Booked",
-      ],
-      "Fri": [
-        "10.00        Booked",
-        "11.00        Available",
-        "12.00        Booked",
-        "13.00        Available",
-        "14.00        Available",
-        "15.00        Booked",
-      ],
-    };
+    dosenSchedule = getCurrentWeek();
+    fetchDosenSchedule();
+    fetchSelectedDosen();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (selectedDosen['temp'] == 'temp') {
+      return Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white10,
+          iconTheme: const IconThemeData(color: Colors.black),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -110,8 +169,8 @@ class _CreateTicketState extends State<CreateTicket> {
                 ),
                 child: Row(
                   children: [
-                    Image.asset(
-                      selectedDosen["Gambar"]!,
+                    Image.network(
+                      selectedDosen["Image"]!,
                       width: 114,
                       height: 175,
                       fit: BoxFit.cover,
@@ -122,7 +181,7 @@ class _CreateTicketState extends State<CreateTicket> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            selectedDosen["Nama"]!,
+                            selectedDosen["Name"]!,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 15,
@@ -130,7 +189,7 @@ class _CreateTicketState extends State<CreateTicket> {
                             ),
                           ),
                           Text(
-                            selectedDosen["NIDN"]!,
+                            selectedDosen["NIM"]!,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 15,
@@ -206,7 +265,8 @@ class _CreateTicketState extends State<CreateTicket> {
                   height: 177,
                   child: SingleChildScrollView(
                     child: Column(
-                        children: dosenSchedule.keys.map((day) {
+                        children: dosenSchedule.map((day) {
+                      String dayName = getDayName(day);
                       bool isSelected = selectedDay == day;
                       return Padding(
                         padding: const EdgeInsets.all(8),
@@ -215,6 +275,7 @@ class _CreateTicketState extends State<CreateTicket> {
                             setState(() {
                               selectedDay = day;
                             });
+                            fetchDosenSchedule();
                           },
                           child: Container(
                             width: 80,
@@ -229,7 +290,7 @@ class _CreateTicketState extends State<CreateTicket> {
                                     borderRadius: BorderRadius.circular(7))),
                             child: Center(
                                 child: Text(
-                              day,
+                              dayName,
                               style: TextStyle(
                                   color:
                                       isSelected ? Colors.white : Colors.black,
@@ -249,12 +310,12 @@ class _CreateTicketState extends State<CreateTicket> {
                   width: 190,
                   child: SingleChildScrollView(
                     child: Column(
-                      children: dosenSchedule[selectedDay]!.map((time) {
+                      children: dosenScheduleList.map((time) {
                         List<String> timeInfo = time.split("        ");
                         String jam = timeInfo[0];
                         String status = timeInfo[1];
 
-                        bool isAvailable = status == "Available";
+                        bool isAvailable = status == "AVAILABLE";
                         bool isSelected = selectedTime == jam;
 
                         return Padding(
@@ -349,14 +410,13 @@ class _CreateTicketState extends State<CreateTicket> {
             ),
             GestureDetector(
               onTap: () {
-                finalSelectedDay = selectedDay;
                 finalSelectedTime = selectedTime;
-                dosen = idDosenNow;
+                dosen = selectedDosen['Email'];
                 finalPurpose = _purposeController.text;
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ConfirmTicket()));
+                finalSelectedDay = selectedDay;
+
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ConfirmTicket()));
               },
               child: Container(
                   width: 400,

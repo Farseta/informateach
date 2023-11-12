@@ -5,7 +5,7 @@ import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/confirmTicketDialog.dart';
 import 'package:informateach/main.dart';
 
-Map ticket = {};
+Map<String, dynamic> ticket = {};
 
 class ConfirmTicket extends StatefulWidget {
   const ConfirmTicket({super.key});
@@ -15,6 +15,14 @@ class ConfirmTicket extends StatefulWidget {
 }
 
 class _ConfirmTicketState extends State<ConfirmTicket> {
+  Map<String, dynamic> selectedDosen = {'temp': 'temp'};
+  Future<void> fetchSelectedDosen() async {
+    Map<String, dynamic> selectedDosenTmp = await getSelectedDosen(idDosen);
+    setState(() {
+      selectedDosen = selectedDosenTmp;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -25,10 +33,23 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
       "Purpose": finalPurpose,
       "Gambar": "style/img/testDosen1.png",
     };
+    fetchSelectedDosen();
   }
 
   @override
   Widget build(BuildContext context) {
+    List<String> dateDetails = ticket['Date'].toString().split(' ');
+    String dayName = getDayName(ticket['Date']);
+    if (selectedDosen['temp'] == 'temp') {
+      return Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white10,
+          iconTheme: const IconThemeData(color: Colors.black),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -77,8 +98,8 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  ticket["Gambar"],
+                Image.network(
+                  selectedDosen['Image'],
                   width: 113.82,
                   height: 163,
                   fit: BoxFit.cover,
@@ -86,23 +107,31 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
                 SizedBox(
                   width: 31,
                 ),
-                Column(
-                  children: [
-                    Text(
-                      "Nama dosen ${ticket["Dosen"]}",
-                      style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      "${ticket["Dosen"]}",
-                      style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        "${selectedDosen['Name']}",
+                        style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        "${selectedDosen["Email"]}",
+                        style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 )
               ],
             ),
@@ -119,7 +148,7 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  ticket["Date"],
+                  '${dayName}, ${dateDetails[0]}',
                   style: TextStyle(
                       fontFamily: 'Quicksand',
                       fontSize: 15,
