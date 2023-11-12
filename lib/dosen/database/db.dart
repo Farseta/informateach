@@ -22,3 +22,9 @@ Future getCurrentDosen() async {
     print(e);
   }
 }
+
+Future createTicket(String date, String time) async {
+  try {} catch (e) {
+    print(e);
+  }
+}

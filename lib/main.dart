@@ -1,6 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api, prefer_const_constructors
 
-import 'dart:io';
+// import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
@@ -12,7 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:informateach/auth/auth.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/cancelTicketDialog.dart';
-import 'package:informateach/dosen/database/db.dart';
+// import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/utils.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';

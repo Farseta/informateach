@@ -1,7 +1,10 @@
-// ignore_for_file: file_names, prefer_const_constructors
+// ignore_for_file: file_names, prefer_const_constructors, use_build_context_synchronously
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/dosen/navbarConnected/profile.dart';
 
 class ConfirmSchedule extends StatefulWidget {
@@ -15,6 +18,31 @@ DateTime _getSunday(DateTime date) {
   int weekday = date.weekday;
   if (weekday == 7) return date;
   return date.subtract(Duration(days: weekday));
+}
+
+Future<void> createTicketDocs(
+    Map<String, List<String>?> selectedTimesMap) async {
+  final CollectionReference ticketsCollection =
+      FirebaseFirestore.instance.collection('tickets');
+
+  String? userEmail = FirebaseAuth.instance.currentUser!.email;
+
+  selectedTimesMap.forEach((day, times) async {
+    for (String time in times!) {
+      String ticketID = '$userEmail-$day-$time';
+      final existingDoc = await ticketsCollection.doc(ticketID).get();
+
+      if (!existingDoc.exists) {
+        await ticketsCollection.doc(ticketID).set({
+          'dosen': userEmail,
+          'day': day,
+          'time': time,
+          'available': true,
+          // tambahkan properti lain yang mungkin kamu butuhkan
+        });
+      }
+    }
+  });
 }
 
 late String test;
@@ -71,7 +99,7 @@ class _ConfirmScheduleState extends State<ConfirmSchedule> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Hi, ${dosenNow["Name"]!}",
+                  "Hi, ${currentDosen['Name']!}",
                   style: const TextStyle(
                     fontFamily: 'Quicksand',
                   ),
@@ -152,6 +180,34 @@ class _ConfirmScheduleState extends State<ConfirmSchedule> {
                 }
               },
               itemCount: scheduleFixed[formatedDate]?.length,
+            ),
+          ),
+          SizedBox(
+            height: 200,
+          ),
+          GestureDetector(
+            onTap: () async {
+              await createTicketDocs(scheduleFixed);
+              Navigator.pop(context);
+            },
+            child: Container(
+              width: 350,
+              height: 45,
+              decoration: ShapeDecoration(
+                  color: Color(0xFF27374D),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  )),
+              child: Center(
+                child: Text(
+                  'CONIRM',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Quicksand',
+                    fontSize: 20,
+                  ),
+                ),
+              ),
             ),
           )
         ]),

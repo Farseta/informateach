@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
+import 'package:informateach/confirmTicket.dart';
 import 'package:informateach/dosen/confirmSchedule.dart';
 import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/dosen/navbarConnected/profile.dart';
@@ -55,7 +58,6 @@ class _AddTicketState extends State<AddTicket> {
 
   @override
   Widget build(BuildContext context) {
-    print(currentDosen["Email"]);
     final sunday = _getSunday(_focusDate);
     return Scaffold(
       body: SingleChildScrollView(
@@ -97,7 +99,7 @@ class _AddTicketState extends State<AddTicket> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "Hi, ${dosenNow["Name"]!}",
+                    "Hi, ${currentDosen["Name"]!}",
                     style: const TextStyle(
                       fontFamily: 'Quicksand',
                     ),
@@ -208,8 +210,6 @@ class _AddTicketState extends State<AddTicket> {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => ConfirmSchedule()));
                 scheduleFixed = selectedTimesMap;
-                // print(scheduleFixed["2023-11-02 00:00:00.000Z"] == null);
-                // print(selectedTimesMap);
               },
               child: Container(
                   width: 329,
