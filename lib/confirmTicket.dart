@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/confirmTicketDialog.dart';
+import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/main.dart';
 
 Map<String, dynamic> ticket = {};
@@ -38,6 +39,7 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
 
   @override
   Widget build(BuildContext context) {
+    getCurrentUser();
     List<String> dateDetails = ticket['Date'].toString().split(' ');
     String dayName = getDayName(ticket['Date']);
     if (selectedDosen['temp'] == 'temp') {
@@ -99,10 +101,19 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.network(
-                  selectedDosen['Image'],
-                  width: 113.82,
-                  height: 163,
+                  selectedDosen['Image'] ?? 'style/img/DefaultIcon.png',
+                  width: 101,
+                  height: 138,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Handle error loading image
+                    return Image.asset(
+                      'style/img/DefaultIcon.png',
+                      width: 101,
+                      height: 138,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
                 SizedBox(
                   width: 31,
@@ -165,7 +176,7 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
             ),
             SizedBox(height: 16),
             Text(
-              "Name   : ${userNow["Nama"]}",
+              "Name   : ${currentUser['Name'] ?? 'Test'}",
               style: TextStyle(
                   fontFamily: 'Quicksand',
                   fontSize: 15,
@@ -175,7 +186,7 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
               height: 6,
             ),
             Text(
-              "NIM      : ${userNow["NIM"]}",
+              "NIM      : ${currentUser["NIM"] ?? 'Test'}",
               style: TextStyle(
                   fontFamily: 'Quicksand',
                   fontSize: 15,

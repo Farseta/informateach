@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:informateach/createTicket.dart';
 
-User? user = FirebaseAuth.instance.currentUser;
-
 late Map<String, dynamic> currentDosen;
+late Map<String, dynamic> currentUser;
 
 Future getCurrentDosen() async {
+  User? user = FirebaseAuth.instance.currentUser;
   try {
     var dosenQuery = await FirebaseFirestore.instance
         .collection('users')
@@ -23,8 +23,20 @@ Future getCurrentDosen() async {
   }
 }
 
-Future createTicket(String date, String time) async {
-  try {} catch (e) {
+Future getCurrentUser() async {
+  User? user = FirebaseAuth.instance.currentUser;
+  try {
+    var dosenQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('Email', isEqualTo: user?.email)
+        .get();
+    if (dosenQuery.docs.isNotEmpty) {
+      var userData = dosenQuery.docs.first.data();
+      currentUser = userData;
+    } else {
+      print('Data kosong');
+    }
+  } catch (e) {
     print(e);
   }
 }

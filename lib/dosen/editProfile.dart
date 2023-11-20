@@ -3,6 +3,7 @@
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,8 +21,10 @@ class EditProfileDosen extends StatefulWidget {
 
 class _EditProfileDosenState extends State<EditProfileDosen> {
   Future<bool> editCurrentUserProfile(
-      String name, String phone, String gender, String nim, String img) async {
+      String name, String phone, String gender, String nim,
+      [String? img]) async {
     try {
+      User? user = FirebaseAuth.instance.currentUser;
       var dosenQuery = await FirebaseFirestore.instance
           .collection('users')
           .where('Email', isEqualTo: user?.email)
@@ -29,13 +32,22 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
       if (dosenQuery.docs.isNotEmpty) {
         var userDocument =
             dosenQuery.docs.first.reference; // Mendapatkan referensi dokumen
-        await userDocument.update({
-          'Name': name,
-          'Phone Number': phone,
-          'Gender': gender,
-          'NIM': nim,
-          'Image': img,
-        });
+        if (img != null) {
+          await userDocument.update({
+            'Name': name,
+            'Phone Number': phone,
+            'Gender': gender,
+            'NIM': nim,
+          });
+        } else {
+          await userDocument.update({
+            'Name': name,
+            'Phone Number': phone,
+            'Gender': gender,
+            'NIM': nim,
+            'Image': img,
+          });
+        }
         return true;
       } else {
         return false;
@@ -47,6 +59,7 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
   }
 
   Future<String> uploadProfilePict(Uint8List image) async {
+    User? user = FirebaseAuth.instance.currentUser;
     Reference ref =
         FirebaseStorage.instance.ref().child('userProfilePict/${user?.email}');
     UploadTask upload = ref.putData(image);
@@ -95,7 +108,6 @@ class _EditProfileDosenState extends State<EditProfileDosen> {
 
   @override
   Widget build(BuildContext context) {
-    getCurrentDosen();
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(

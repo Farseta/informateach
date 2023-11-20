@@ -31,14 +31,14 @@ Future<Map<String, dynamic>> getSelectedDosen(String email) async {
   }
 }
 
-Future<List<String>> getDosenSchedule(String day) async {
+Future<List<String>> getDosenSchedule(String day, String email) async {
   final CollectionReference dosenScheduleCollection =
       FirebaseFirestore.instance.collection('tickets');
 
   // Ganti 'day' dengan field yang sesuai dengan struktur dokumen Firestore
   QuerySnapshot<Object?> querySnapshot = await dosenScheduleCollection
       .where('day', isEqualTo: day)
-      // .where('dosen', isEqualTo: 'christianozetroabsinaga@gmail.com')
+      .where('dosen', isEqualTo: email)
       .get();
 
   List<String> timeList = [];
@@ -99,7 +99,7 @@ class _CreateTicketState extends State<CreateTicket> {
   List<String> dosenScheduleList = [];
 
   Future<void> fetchDosenSchedule() async {
-    List<String> schedule = await getDosenSchedule(selectedDay);
+    List<String> schedule = await getDosenSchedule(selectedDay, idDosen);
     setState(() {
       dosenScheduleList = schedule;
     });
@@ -170,10 +170,19 @@ class _CreateTicketState extends State<CreateTicket> {
                 child: Row(
                   children: [
                     Image.network(
-                      selectedDosen["Image"]!,
-                      width: 114,
-                      height: 175,
+                      selectedDosen["Image"] ?? 'style/img/DefaultIcon.png',
+                      width: 101,
+                      height: 138,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Handle error loading image
+                        return Image.asset(
+                          'style/img/DefaultIcon.png',
+                          width: 101,
+                          height: 138,
+                          fit: BoxFit.cover,
+                        );
+                      },
                     ),
                     const SizedBox(width: 20),
                     Center(

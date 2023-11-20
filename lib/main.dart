@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:informateach/auth/auth.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/cancelTicketDialog.dart';
+import 'package:informateach/dosen/database/db.dart';
 // import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/utils.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -27,33 +28,15 @@ Map userNow = {
   "Gambar": _image,
 };
 
-late Map<String, dynamic> currentUser;
 Uint8List? _image;
 // late bool showBottomNavBar;
 late bool showBottomNavBar;
 late String idDosen;
-User? user = FirebaseAuth.instance.currentUser;
-
-Future getCurrentUser() async {
-  try {
-    var userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('Email', isEqualTo: user?.email)
-        .get();
-
-    if (userQuery.docs.isNotEmpty) {
-      var userData = userQuery.docs.first.data();
-      currentUser = userData;
-    } else {
-      print("data kosong");
-    }
-  } catch (e) {
-    print(e);
-  }
-}
 
 Future<bool> editCurrentUserProfile(
-    String name, String phone, String gender, String nim, String img) async {
+    String name, String phone, String gender, String nim,
+    [String? img]) async {
+  User? user = FirebaseAuth.instance.currentUser;
   try {
     var userQuery = await FirebaseFirestore.instance
         .collection('users')
@@ -62,13 +45,22 @@ Future<bool> editCurrentUserProfile(
     if (userQuery.docs.isNotEmpty) {
       var userDocument =
           userQuery.docs.first.reference; // Mendapatkan referensi dokumen
-      await userDocument.update({
-        'Name': name,
-        'Phone Number': phone,
-        'Gender': gender,
-        'NIM': nim,
-        'Image': img,
-      });
+      if (img != null) {
+        await userDocument.update({
+          'Name': name,
+          'Phone Number': phone,
+          'Gender': gender,
+          'NIM': nim,
+          'Image': img,
+        });
+      } else {
+        await userDocument.update({
+          'Name': name,
+          'Phone Number': phone,
+          'Gender': gender,
+          'NIM': nim,
+        });
+      }
       return true;
     } else {
       return false;
@@ -226,26 +218,39 @@ Future<List<Map<String, dynamic>>> getListDosen() async {
 }
 
 class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
-  // final List<Map<String, dynamic>> listDosen = [
-  //   for (int i = 1; i <= 10; i++)
-  //     {
-  //       "Gambar": "style/img/testDosen1.png",
-  //       "Nama": "Nama Dosen $i",
-  //       "NIDM": "NIDM Dosen $i",
-  //     }
-  // ];
   late List<Map<String, dynamic>> listDosen = [];
+  late TextEditingController searchController = TextEditingController();
+  List<Map<String, dynamic>> filteredDosenList = [];
 
   Future<void> fetchDosenList() async {
     List<Map<String, dynamic>> dosen = await getListDosen();
     setState(() {
       listDosen = dosen;
+      filteredDosenList = listDosen;
     });
   }
 
   void initState() {
     super.initState();
     fetchDosenList();
+  }
+
+  void filterDosenList(String query) {
+    List<Map<String, dynamic>> filteredList = [];
+
+    if (query.isNotEmpty) {
+      filteredList = listDosen
+          .where((dosen) =>
+              dosen["Name"]!.toLowerCase().contains(query.toLowerCase()) ||
+              dosen["NIM"]!.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    } else {
+      filteredList = List.from(listDosen);
+    }
+
+    setState(() {
+      filteredDosenList = filteredList;
+    });
   }
 
   @override
@@ -259,13 +264,19 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'INFORMATEACH',
-                style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
+              title: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'INFORMATEACH',
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
               background: Image.asset(
                 "style/img/unesa 2.png",
@@ -276,22 +287,96 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                final data = listDosen[index];
+                if (filteredDosenList.isEmpty) {
+                  return Container(
+                    margin: EdgeInsets.only(top: 19, left: 20, right: 20),
+                    child: Column(
+                      children: [
+                        Row(children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: const Text(
+                              "Daftar Dosen",
+                              style: TextStyle(
+                                  fontFamily: 'Quicksand',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 30,
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: searchController,
+                              decoration: const InputDecoration(
+                                hintText: 'Cari dosen...',
+                                hintStyle: TextStyle(color: Colors.black),
+                              ),
+                              style: const TextStyle(color: Colors.black),
+                              onChanged: (value) {
+                                // Handle search query changes
+                                filterDosenList(value);
+                              },
+                            ),
+                          ),
+                        ]),
+                        Container(
+                            margin: EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 20),
+                            child: Center(
+                                child: Text(
+                              "Dosen yang anda cari tidak tersedia",
+                              style: TextStyle(
+                                fontFamily: 'Quicksand',
+                                fontSize: 20,
+                              ),
+                            ))),
+                      ],
+                    ),
+                  );
+                }
+                final data = filteredDosenList[index];
                 if (index == 0) {
                   return Column(
                     children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.only(top: 19, left: 20),
-                          child: const Text(
-                            "Daftar Dosen",
-                            style: TextStyle(
-                                fontFamily: 'Quicksand',
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600),
+                      Container(
+                        margin: EdgeInsets.only(top: 19, left: 20, right: 20),
+                        child: Row(children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: const Text(
+                              "Daftar Dosen",
+                              style: TextStyle(
+                                  fontFamily: 'Quicksand',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600),
+                            ),
                           ),
-                        ),
+                          SizedBox(
+                            width: 30,
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: searchController,
+                              decoration: const InputDecoration(
+                                hintText: 'Cari dosen...',
+                                hintStyle: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Quicksand',
+                                ),
+                              ),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontFamily: 'Quicsand',
+                              ),
+                              onChanged: (value) {
+                                // Handle search query changes
+                                filterDosenList(value);
+                              },
+                            ),
+                          ),
+                        ]),
                       ),
                       GestureDetector(
                         onTap: () {
@@ -323,10 +408,19 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                           child: Row(
                             children: [
                               Image.network(
-                                data["Image"]!,
+                                data["Image"] ?? 'style/img/DefaultIcon.png',
                                 width: 101,
                                 height: 138,
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Handle error loading image
+                                  return Image.asset(
+                                    'style/img/DefaultIcon.png',
+                                    width: 101,
+                                    height: 138,
+                                    fit: BoxFit.cover,
+                                  );
+                                },
                               ),
                               const SizedBox(width: 20),
                               Expanded(
@@ -393,10 +487,19 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         child: Row(
                           children: [
                             Image.network(
-                              data["Image"]!,
+                              data["Image"] ?? 'style/img/DefaultIcon.png',
                               width: 101,
                               height: 138,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                // Handle error loading image
+                                return Image.asset(
+                                  'style/img/DefaultIcon.png',
+                                  width: 101,
+                                  height: 138,
+                                  fit: BoxFit.cover,
+                                );
+                              },
                             ),
                             const SizedBox(width: 20),
                             Center(
@@ -465,10 +568,19 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         child: Row(
                           children: [
                             Image.network(
-                              data["Image"]!,
+                              data["Image"] ?? 'style/img/DefaultIcon.png',
                               width: 101,
                               height: 138,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                // Handle error loading image
+                                return Image.asset(
+                                  'style/img/DefaultIcon.png',
+                                  width: 101,
+                                  height: 138,
+                                  fit: BoxFit.cover,
+                                );
+                              },
                             ),
                             const SizedBox(width: 20),
                             Center(
@@ -507,7 +619,8 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                       ));
                 }
               },
-              childCount: listDosen.length,
+              childCount:
+                  filteredDosenList.isEmpty ? 1 : filteredDosenList.length,
             ),
           ),
         ],
@@ -592,10 +705,19 @@ class _AboutDosenState extends State<AboutDosen> {
                 child: Column(
           children: [
             Image.network(
-              selectedDosen["Image"]!,
-              width: 113.82,
-              height: 163,
+              selectedDosen["Image"] ?? 'style/img/DefaultIcon.png',
+              width: 101,
+              height: 138,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                // Handle error loading image
+                return Image.asset(
+                  'style/img/DefaultIcon.png',
+                  width: 101,
+                  height: 138,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
             const SizedBox(
               height: 19,
@@ -858,6 +980,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future<String> uploadProfilePict(Uint8List image) async {
+    User? user = FirebaseAuth.instance.currentUser;
     Reference ref =
         FirebaseStorage.instance.ref().child('userProfilePict/${user?.email}');
     UploadTask upload = ref.putData(image);
@@ -867,9 +990,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   void saveChanges() async {
-    String img = await uploadProfilePict(_image!);
-    bool done = await editCurrentUserProfile(_nameController.text,
-        _phoneController.text, _genderController.text, "21051204033", img);
+    bool done;
+    if (_image != null) {
+      String img = await uploadProfilePict(_image!);
+      done = await editCurrentUserProfile(_nameController.text,
+          _phoneController.text, _genderController.text, "21051204033", img);
+    } else {
+      done = await editCurrentUserProfile(_nameController.text,
+          _phoneController.text, _genderController.text, "21051204033");
+    }
+    ;
+
     if (done) {
       Navigator.pop(context);
     }
@@ -882,7 +1013,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-
     _nameController = TextEditingController(text: currentUser["Name"]!);
     _phoneController =
         TextEditingController(text: currentUser["Phone Number"]!);
