@@ -1,4 +1,4 @@
-// ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api, prefer_const_constructors
+// ignore_for_file: use_key_in_widget_constructors, avoid_print, library_private_types_in_public_api, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 // import 'dart:io';
 import 'dart:typed_data';
@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,10 +14,17 @@ import 'package:informateach/auth/auth.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/cancelTicketDialog.dart';
 import 'package:informateach/dosen/database/db.dart';
-// import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/utils.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 Map userNow = {
   "Gambar": "style/img/testUser/png",
@@ -71,8 +79,127 @@ Future<bool> editCurrentUserProfile(
   }
 }
 
+Future<void> scheduleNotification(
+    {required String title,
+    required String body,
+    required int id,
+    required String action}) async {
+  //KONFIGURASI NOTIFIKASI
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'tiket_2',
+    'schedule_tiket',
+    importance: Importance.max,
+    priority: Priority.max,
+  );
+
+  tz.initializeTimeZones();
+  tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+  if (action == 'create') {
+    //MEMBUAT NOTIFIKASI TERJADWAL
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.from(DateTime.now().add(Duration(minutes: 1)), tz.local),
+      platformChannelSpecifics,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: 'scheduled_notification',
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+    print("Schedule Notif Terbuat");
+  } else if (action == 'cancel') {
+    //MEMBATALKAN NOTIFIKASI TERJADWAL
+    await flutterLocalNotificationsPlugin.cancel(id);
+    print("Notifikasi terbatalkan");
+  }
+}
+
+Future<void> showNotification(String title, String body, int id) async {
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'tiket_1', // Ganti dengan ID channel yang sesuai
+    'notif_tiket', // Ganti dengan nama channel yang sesuai
+    importance: Importance.max,
+    priority: Priority.high,
+  );
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  await flutterLocalNotificationsPlugin.show(
+    id,
+    title,
+    body,
+    platformChannelSpecifics,
+    payload: 'your_custom_data', // Ganti dengan data kustom yang sesuai
+  );
+}
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print(
+      "${message.data['action']} a notification with id : ${message.data['id']}");
+  scheduleNotification(
+    title: message.data['title'] ?? 'Default Title',
+    body: message.data['body'] ?? 'Default Body',
+    id: int.tryParse(message.data['id'] ?? '0') ?? 0,
+    action: message.data['action'] ?? 'cancel',
+  );
+  // Menampilkan notifikasi lokal
+  showNotification(
+    message.data['title'] ?? 'Notification Title',
+    message.data['body'] ?? 'Notification Body',
+    int.tryParse(message.data['id'] ?? '0') ?? 0,
+  );
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
+  tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  final InitializationSettings initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+  );
+
+  //RECEIVE NOTIFICATION
+  //FOREGROUND SITUATION
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print(
+        "${message.data['action']} a notification with id : ${message.data['id']}");
+
+    scheduleNotification(
+      title: message.data['title'] ?? 'Default Title',
+      body: message.data['body'] ?? 'Default Body',
+      id: int.tryParse(message.data['id'] ?? '0') ?? 0,
+      action: message.data['action'] ?? 'create',
+    );
+    showNotification(
+      message.data['title'] ?? 'Notification Title',
+      message.data['body'] ?? 'Notification Body',
+      int.tryParse(message.data['id'] ?? '0') ?? 0,
+    );
+  });
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    // Handling when the app is opened from a terminated state
+    print('Message Opened App: ${message.notification?.body}');
+
+    showNotification(
+      message.notification?.title ?? 'Notification Title',
+      message.notification?.body ?? 'Notification Body',
+      int.tryParse(message.data['id'] ?? '0') ?? 0,
+    );
+  });
+
+  //BACKGROUND SITUATION
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -119,11 +246,36 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
   late final PageController _pageController;
   late final NotchBottomBarController _controller;
 
+  Future<void> editCurrentUserToken(String token) async {
+    User user = FirebaseAuth.instance.currentUser!;
+    try {
+      var userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('Email', isEqualTo: user.email)
+          .get();
+      if (userQuery.docs.isNotEmpty) {
+        var userDocument = userQuery.docs.first.reference;
+        await userDocument.update({'Token': token});
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> checkDeviceToken() async {
+    await getCurrentUser();
+    final deviceToken = await FirebaseMessaging.instance.getToken();
+    if (currentUser['Token'] != deviceToken) {
+      await editCurrentUserToken(deviceToken!);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: widget.initialPage);
     _controller = NotchBottomBarController(index: widget.initialPage);
+    checkDeviceToken();
   }
 
   @override
@@ -140,7 +292,7 @@ class _MyAppMahasiswaState extends State<MyAppMahasiswa> {
           },
           children: [
             HomepageMahasiswa(),
-            const TicketMahasiswaPage(),
+            TicketMahasiswaPage(),
             ProfilePage(),
           ],
         ),
@@ -407,20 +559,23 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                           ),
                           child: Row(
                             children: [
-                              Image.network(
-                                data["Image"] ?? 'style/img/DefaultIcon.png',
-                                width: 101,
-                                height: 138,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  // Handle error loading image
-                                  return Image.asset(
-                                    'style/img/DefaultIcon.png',
-                                    width: 101,
-                                    height: 138,
-                                    fit: BoxFit.cover,
-                                  );
-                                },
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  data["Image"] ?? 'style/img/DefaultIcon.png',
+                                  width: 101,
+                                  height: 138,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    // Handle error loading image
+                                    return Image.asset(
+                                      'style/img/DefaultIcon.png',
+                                      width: 101,
+                                      height: 138,
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                ),
                               ),
                               const SizedBox(width: 20),
                               Expanded(
@@ -486,20 +641,23 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         ),
                         child: Row(
                           children: [
-                            Image.network(
-                              data["Image"] ?? 'style/img/DefaultIcon.png',
-                              width: 101,
-                              height: 138,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                // Handle error loading image
-                                return Image.asset(
-                                  'style/img/DefaultIcon.png',
-                                  width: 101,
-                                  height: 138,
-                                  fit: BoxFit.cover,
-                                );
-                              },
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                data["Image"] ?? 'style/img/DefaultIcon.png',
+                                width: 101,
+                                height: 138,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Handle error loading image
+                                  return Image.asset(
+                                    'style/img/DefaultIcon.png',
+                                    width: 101,
+                                    height: 138,
+                                    fit: BoxFit.cover,
+                                  );
+                                },
+                              ),
                             ),
                             const SizedBox(width: 20),
                             Center(
@@ -567,20 +725,23 @@ class _HomepageMahasiswaState extends State<HomepageMahasiswa> {
                         ),
                         child: Row(
                           children: [
-                            Image.network(
-                              data["Image"] ?? 'style/img/DefaultIcon.png',
-                              width: 101,
-                              height: 138,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                // Handle error loading image
-                                return Image.asset(
-                                  'style/img/DefaultIcon.png',
-                                  width: 101,
-                                  height: 138,
-                                  fit: BoxFit.cover,
-                                );
-                              },
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                data["Image"] ?? 'style/img/DefaultIcon.png',
+                                width: 101,
+                                height: 138,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Handle error loading image
+                                  return Image.asset(
+                                    'style/img/DefaultIcon.png',
+                                    width: 101,
+                                    height: 138,
+                                    fit: BoxFit.cover,
+                                  );
+                                },
+                              ),
                             ),
                             const SizedBox(width: 20),
                             Center(
@@ -1251,7 +1412,7 @@ class _ProfilePageState extends State<ProfilePage> {
               )),
           Stack(
             children: [
-              currentUser['Image'] != ''
+              currentUser['Image'] != null
                   ? Container(
                       margin: const EdgeInsets.only(top: 44),
                       child: ClipOval(
@@ -1402,6 +1563,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               )
             ],
+          ),
+          SizedBox(
+            height: 150,
           )
         ],
       ),
@@ -1417,17 +1581,57 @@ class TicketMahasiswaPage extends StatefulWidget {
 }
 
 class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
-  final List<Map<String, dynamic>> listTicket = [
-    for (int i = 5; i <= 6; i++)
-      {
-        "Id": "ID Tiket $i",
-        "Dosen": "Dosen Tiket $i",
-        "Tanggal": "3 October 2023",
-        "Jam": "10.00",
-        "Tujuan": "Tujuan Pertemuan Tiket $i",
-        "Gambar": "style/img/testDosen1.png",
+  late List<Map<String, dynamic>> listTicket = [];
+
+  Future<List<Map<String, dynamic>>> getListTicket() async {
+    final CollectionReference ticketCollection =
+        FirebaseFirestore.instance.collection('tickets');
+    QuerySnapshot<Object?> querySnapshot = await ticketCollection
+        .where('studentEmail', isEqualTo: currentUser['Email'])
+        .where('status', isEqualTo: 'Waiting for validation')
+        .get();
+
+    List<Map<String, dynamic>> ticketList = [];
+
+    for (var ticketDoc in querySnapshot.docs) {
+      var ticketData = ticketDoc.data() as Map<String, dynamic>;
+
+      // Pastikan ada properti 'dosen' dalam data tiket sebelum melanjutkan
+      if (ticketData.containsKey('dosen')) {
+        var dosenQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('Email', isEqualTo: ticketData['dosen'])
+            .get();
+
+        // Pastikan ada dokumen pengguna (dosen) yang sesuai
+        if (dosenQuery.docs.isNotEmpty) {
+          var dosenData = dosenQuery.docs.first.data() as Map<String, dynamic>;
+
+          // Tambahkan properti 'dosenNama' dan 'dosenGambar' ke tiket
+          ticketData['dosen'] = dosenData['Name'];
+          ticketData['dosenGambar'] = dosenData['Image'];
+        }
       }
-  ];
+
+      // Tambahkan tiket ke daftar tiket
+      ticketList.add(ticketData);
+    }
+
+    return ticketList;
+  }
+
+  Future<void> fetchTicketList() async {
+    List<Map<String, dynamic>> tickets = await getListTicket();
+    setState(() {
+      listTicket = tickets;
+    });
+  }
+
+  void initState() {
+    super.initState();
+    fetchTicketList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1435,6 +1639,8 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
         itemCount: listTicket.length,
         itemBuilder: ((context, index) {
           final data = listTicket[index];
+          List<String> dayDetails = data['day'].toString().split(' ');
+          String dayName = getDayName(data['day']);
           if (index == 0) {
             return Column(
               children: [
@@ -1456,11 +1662,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const MyAppMahasiswa(initialPage: 1))),
+                        onTap: () {},
                         child: const Text(
                           "AVAILABLE",
                           style: TextStyle(
@@ -1510,10 +1712,23 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                   margin: const EdgeInsets.only(left: 11, right: 11, top: 14),
                   child: Row(
                     children: [
-                      Image.asset(
-                        data["Gambar"]!,
-                        height: 112,
-                        fit: BoxFit.cover,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          data['dosenGambar'] ?? 'style/img/DefaultIcon.png',
+                          height: 112,
+                          width: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Handle error loading image
+                            return Image.asset(
+                              'style/img/DefaultIcon.png',
+                              width: 101,
+                              height: 138,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        ),
                       ),
                       const SizedBox(
                         width: 17,
@@ -1523,7 +1738,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                         children: [
                           const SizedBox(height: 33),
                           Text(
-                            data["Dosen"]!,
+                            data["dosen"]!,
                             style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 13,
@@ -1531,14 +1746,16 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                             ),
                           ),
                           Text(
-                            "${data["Tanggal"]}, ${data["Jam"]}",
+                            "$dayName, ${dayDetails[0]}",
                             style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 10,
                             ),
                           ),
                           Text(
-                            "${data["Tujuan"]}",
+                            (data["purpose"] == '' || data["purpose"] == null)
+                                ? "Tidak ada tujuan yang tertulis"
+                                : data['purpose'],
                             style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 10,
@@ -1604,10 +1821,22 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                 margin: const EdgeInsets.only(left: 11, right: 11, top: 14),
                 child: Row(
                   children: [
-                    Image.asset(
-                      data["Gambar"]!,
-                      height: 112,
-                      fit: BoxFit.cover,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        data['dosenGambar'] ?? 'style/img/DefaultIcon.png',
+                        height: 112,
+                        width: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'style/img/DefaultIcon.png',
+                            width: 101,
+                            height: 138,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
                     ),
                     const SizedBox(
                       width: 17,
@@ -1617,7 +1846,7 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                       children: [
                         const SizedBox(height: 33),
                         Text(
-                          data["Dosen"]!,
+                          data["dosen"]!,
                           style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 13,
@@ -1625,14 +1854,16 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                           ),
                         ),
                         Text(
-                          "${data["Tanggal"]}, ${data["Jam"]}",
+                          "$dayName, ${dayDetails[0]}",
                           style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 10,
                           ),
                         ),
                         Text(
-                          "${data["Tujuan"]}",
+                          (data["purpose"] == '' || data["purpose"] == null)
+                              ? "Tidak ada tujuan yang tertulis"
+                              : data['purpose'],
                           style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 10,
@@ -1681,36 +1912,133 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
   }
 }
 
-class HistoryTicketPage extends StatelessWidget {
-  final List<Map<String, dynamic>> listTicket = [
-    for (int i = 1; i <= 2; i++)
-      {
-        "Id": "ID Tiket $i",
-        "Dosen": "Dosen Tiket $i",
-        "Tanggal": "3 October 2023",
-        "Jam": "10.00",
-        "Tujuan": "Tujuan Pertemuan Tiket $i",
-        "Gambar": "style/img/testDosen1.png",
-        "Status": "Success",
-      },
-    for (int i = 3; i <= 4; i++)
-      {
-        "Id": "ID Tiket $i",
-        "Dosen": "Dosen Tiket $i",
-        "Tanggal": "3 October 2023",
-        "Jam": "10.00",
-        "Tujuan": "Tujuan Pertemuan Tiket $i",
-        "Gambar": "style/img/testDosen1.png",
-        "Status": "Not Verified",
+class HistoryTicketPage extends StatefulWidget {
+  const HistoryTicketPage({super.key});
+
+  @override
+  State<HistoryTicketPage> createState() => _HistoryTicketPageState();
+}
+
+class _HistoryTicketPageState extends State<HistoryTicketPage> {
+  late List<Map<String, dynamic>> listTicket = [];
+
+  //FUNCTIONS
+  Future<List<Map<String, dynamic>>> getListTicket() async {
+    final CollectionReference ticketCollection =
+        FirebaseFirestore.instance.collection('tickets');
+    QuerySnapshot<Object?> querySnapshot = await ticketCollection
+        .where('studentEmail', isEqualTo: currentUser['Email'])
+        .where('status', isNotEqualTo: 'Waiting for validation')
+        .get();
+
+    List<Map<String, dynamic>> ticketList = [];
+
+    for (var ticketDoc in querySnapshot.docs) {
+      var ticketData = ticketDoc.data() as Map<String, dynamic>;
+
+      // Pastikan ada properti 'dosen' dalam data tiket sebelum melanjutkan
+      if (ticketData.containsKey('dosen')) {
+        var dosenQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('Email', isEqualTo: ticketData['dosen'])
+            .get();
+
+        // Pastikan ada dokumen pengguna (dosen) yang sesuai
+        if (dosenQuery.docs.isNotEmpty) {
+          var dosenData = dosenQuery.docs.first.data() as Map<String, dynamic>;
+
+          // Tambahkan properti 'dosenNama' dan 'dosenGambar' ke tiket
+          ticketData['dosen'] = dosenData['Name'];
+          ticketData['dosenGambar'] = dosenData['Image'];
+        }
       }
-  ];
+
+      // Tambahkan tiket ke daftar tiket
+      ticketList.add(ticketData);
+    }
+
+    return ticketList;
+  }
+
+  Future<void> fetchTicketList() async {
+    List<Map<String, dynamic>> tickets = await getListTicket();
+    setState(() {
+      listTicket = tickets;
+    });
+  }
+
+  void initState() {
+    super.initState();
+    fetchTicketList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    getCurrentUser();
+    if (listTicket.isEmpty) {
+      return Scaffold(
+        body: Column(children: [
+          SizedBox(
+            height: 40,
+          ),
+          Container(
+            width: 458,
+            height: 75,
+            decoration: const BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x3F000000),
+                  offset: Offset(0, 4),
+                  spreadRadius: 0,
+                  blurRadius: 4,
+                ),
+              ],
+              color: Colors.white,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "AVAILABLE",
+                    style: TextStyle(
+                      color: Colors.black.withOpacity(0.2),
+                      fontFamily: 'Quicksand',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Image.asset("style/img/Line 2.png"),
+                GestureDetector(
+                  onTap: () {},
+                  child: const Text(
+                    "HISTORY",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Quicksand',
+                      fontWeight: FontWeight.w700,
+                      height: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ]),
+      );
+    }
     return Scaffold(
       body: ListView.builder(
         itemCount: listTicket.length,
         itemBuilder: ((context, index) {
           final data = listTicket[index];
+          List<String> dayDetails = data['day'].toString().split(' ');
+          String dayName = getDayName(data['day']);
+
           if (index == 0) {
             return Column(
               children: [
@@ -1732,11 +2060,9 @@ class HistoryTicketPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const MyAppMahasiswa(initialPage: 1))),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
                         child: Text(
                           "AVAILABLE",
                           style: TextStyle(
@@ -1749,10 +2075,7 @@ class HistoryTicketPage extends StatelessWidget {
                       ),
                       Image.asset("style/img/Line 2.png"),
                       GestureDetector(
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => HistoryTicketPage())),
+                        onTap: () {},
                         child: const Text(
                           "HISTORY",
                           style: TextStyle(
@@ -1786,10 +2109,23 @@ class HistoryTicketPage extends StatelessWidget {
                   margin: const EdgeInsets.only(left: 11, right: 11, top: 14),
                   child: Row(
                     children: [
-                      Image.asset(
-                        data["Gambar"]!,
-                        height: 112,
-                        fit: BoxFit.cover,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          data["dosenGambar"] ?? 'style/img/DefaultIcon.png',
+                          height: 112,
+                          width: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            //HANDLE ERROR IMAGE
+                            return Image.asset(
+                              'style/img/DefaultIcon.png',
+                              width: 101,
+                              height: 138,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        ),
                       ),
                       const SizedBox(
                         width: 17,
@@ -1799,7 +2135,7 @@ class HistoryTicketPage extends StatelessWidget {
                         children: [
                           const SizedBox(height: 33),
                           Text(
-                            data["Dosen"]!,
+                            data["dosen"]!,
                             style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 13,
@@ -1807,14 +2143,16 @@ class HistoryTicketPage extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            "${data["Tanggal"]}, ${data["Jam"]}",
+                            "$dayName, ${dayDetails[0]}",
                             style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 10,
                             ),
                           ),
                           Text(
-                            "${data["Tujuan"]}",
+                            (data["purpose"] == '' || data["purpose"] == null)
+                                ? "Tidak ada tujuan yang tertulis"
+                                : data['purpose'],
                             style: const TextStyle(
                               fontFamily: 'Quicksand',
                               fontSize: 10,
@@ -1827,9 +2165,9 @@ class HistoryTicketPage extends StatelessWidget {
                             width: 200,
                             alignment: Alignment.centerRight,
                             child: Text(
-                              data["Status"],
+                              data["status"],
                               style: TextStyle(
-                                  color: data["Status"] == "Success"
+                                  color: data["status"] == "Validated"
                                       ? const Color(0xFF0165FC)
                                       : const Color(0xFFFF0000),
                                   fontFamily: 'Quicksand',
@@ -1866,10 +2204,23 @@ class HistoryTicketPage extends StatelessWidget {
                 margin: const EdgeInsets.only(left: 11, right: 11, top: 14),
                 child: Row(
                   children: [
-                    Image.asset(
-                      data["Gambar"]!,
-                      height: 112,
-                      fit: BoxFit.cover,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        data["dosenGambar"] ?? 'style/img/DefaultIcon.png',
+                        height: 112,
+                        width: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          //HANDLE ERROR IMAGE LOAD
+                          return Image.asset(
+                            'style/img/DefaultIcon.png',
+                            width: 101,
+                            height: 138,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
                     ),
                     const SizedBox(
                       width: 17,
@@ -1879,7 +2230,7 @@ class HistoryTicketPage extends StatelessWidget {
                       children: [
                         const SizedBox(height: 33),
                         Text(
-                          data["Dosen"]!,
+                          data["dosen"]!,
                           style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 13,
@@ -1887,14 +2238,16 @@ class HistoryTicketPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "${data["Tanggal"]}, ${data["Jam"]}",
+                          "$dayName, ${dayDetails[0]}",
                           style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 10,
                           ),
                         ),
                         Text(
-                          "${data["Tujuan"]}",
+                          (data['purpose'] == '' || data['purpose'] == null)
+                              ? "Tidak ada tujuan yang tertulis"
+                              : data['purpose'],
                           style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 10,
@@ -1907,9 +2260,9 @@ class HistoryTicketPage extends StatelessWidget {
                           width: 200,
                           alignment: Alignment.centerRight,
                           child: Text(
-                            data["Status"],
+                            data["status"],
                             style: TextStyle(
-                                color: data["Status"] == "Success"
+                                color: data["status"] == "Validated"
                                     ? const Color(0xFF0165FC)
                                     : const Color(0xFFFF0000),
                                 fontFamily: 'Quicksand',

@@ -1,7 +1,13 @@
 // ignore_for_file: file_names, prefer_const_constructors
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:informateach/createTicket.dart';
+import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/main.dart';
+
+String tokenHpTest =
+    "d1pgfqYcSRi1Cx02FLxuoG:APA91bFUZ5bD49_x7PS8lPiMS9GWr03bcAUT1gJuNtDZTmwFNBudrNPEpj3k_LPwZ-9oQkarZEPYf2QjWMGvsVkylS5h2qn7eWtilQiC6t1WHnMB3mbYjuDVNsFyovMMWp0yRoFV_dvA";
 
 class ConfirmTicketDialog extends StatefulWidget {
   const ConfirmTicketDialog({super.key});
@@ -11,8 +17,30 @@ class ConfirmTicketDialog extends StatefulWidget {
 }
 
 class _ConfirmTicketDialogState extends State<ConfirmTicketDialog> {
+  Map<String, dynamic> selectedDosen = {'temp': 'temp'};
+  Future<void> fetchSelectedDosen() async {
+    Map<String, dynamic> selectedDosenTmp = await getSelectedDosen(idDosen);
+    setState(() {
+      selectedDosen = selectedDosenTmp;
+    });
+  }
+
+  Future<String?> getDeviceToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token = await messaging.getToken();
+
+    return token;
+  }
+
+  @override
+  void initState() {
+    super.initState;
+    fetchSelectedDosen();
+  }
+
   @override
   Widget build(BuildContext context) {
+    getCurrentUser();
     return Dialog(
       insetPadding: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
@@ -53,14 +81,11 @@ class _ConfirmTicketDialogState extends State<ConfirmTicketDialog> {
             height: 13,
           ),
           GestureDetector(
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
                 Navigator.pop(context);
                 Navigator.pop(context);
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MyAppMahasiswa(initialPage: 0)));
+                // MENDAPATKAN TOKEN DEVICE
               },
               child: Container(
                 width: 80,

@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/dosen/navbarConnected/add.dart';
@@ -23,11 +26,36 @@ class _MyAppDosenState extends State<MyAppDosen> {
   late final PageController _pageController;
   late final NotchBottomBarController _controller;
 
+  Future<void> editCurrentUserToken(String token) async {
+    User user = FirebaseAuth.instance.currentUser!;
+    try {
+      var userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('Email', isEqualTo: user.email)
+          .get();
+      if (userQuery.docs.isNotEmpty) {
+        var userDocument = userQuery.docs.first.reference;
+        await userDocument.update({'Token': token});
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> checkDeviceToken() async {
+    await getCurrentDosen();
+    final deviceToken = await FirebaseMessaging.instance.getToken();
+    if (currentDosen['Token'] != deviceToken) {
+      await editCurrentUserToken(deviceToken!);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: widget.initialPage);
     _controller = NotchBottomBarController(index: widget.initialPage);
+    checkDeviceToken();
   }
 
   @override

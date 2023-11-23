@@ -231,7 +231,10 @@ class _AddTicketState extends State<AddTicket> {
                       ),
                     ),
                   )),
-            )
+            ),
+            SizedBox(
+              height: 150,
+            ),
           ],
         ),
       ),

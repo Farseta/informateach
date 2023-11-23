@@ -1,4 +1,9 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:informateach/dosen/dialog/cancel.dart';
+import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/dosen/dialog/validate.dart';
 
 class ScheduleDosen extends StatefulWidget {
@@ -9,39 +14,115 @@ class ScheduleDosen extends StatefulWidget {
 }
 
 class _ScheduleDosenState extends State<ScheduleDosen> {
-  // List Ticket yang akan ditampilkan
-  final List<Map<String, dynamic>> ticketData = [
-    {
-      "Date": "Mon, 9 Oct 2023",
-      "Tickets": ["Ticket 1", "Ticket 2"]
-    },
-    {
-      "Date": "Tue, 10 Oct 2023",
-      "Tickets": ["Ticket 3", "Ticket 4"]
-    },
-    {
-      "Date": "Wed, 11 Oct 2023",
-      "Tickets": ["Ticket 5", "Ticket 6"]
-    },
-    {
-      "Date": "Thu, 12 Oct 2023",
-      "Tickets": ["Ticket 7", "Ticket 7"]
-    },
-    {
-      "Date": "Fri, 13 Oct 2023",
-      "Tickets": ["Ticket 9", "Ticket 10"]
-    },
-    {
-      "Date": "Sat, 14 Oct 2023",
-      "Tickets": ["Ticket 11", "Ticket 12"]
-    },
-    {
-      "Date": "Sun, 15 Oct 2023",
-      "Tickets": ["Ticket 13", "Ticket 14"]
-    },
-  ];
+  //LIST YANG AKAN DITAMPILKAN KE INTERFACE
+  late List<Map<String, dynamic>> listTicket = [];
+  late List<String> dates = [];
+
+  //FUNGSI FUNGSI BANTUAN YANG DIPERLUKAN
+  //FUNGSI UNTUK MENDAPATKAN TIKET BERDASARKAN HARI
+  Future<List<Map<String, dynamic>>> getListTicket() async {
+    await getCurrentDosen();
+    final CollectionReference ticketCollection =
+        FirebaseFirestore.instance.collection('tickets');
+
+    QuerySnapshot<Object?> querySnapshot = await ticketCollection
+        .where('dosen', isEqualTo: currentDosen['Email'])
+        .get();
+
+    List<Map<String, dynamic>> listTicketTmp = [];
+
+    for (var ticketDoc in querySnapshot.docs) {
+      var ticketData = ticketDoc.data() as Map<String, dynamic>;
+      List<String> dateDetails = ticketData['day'].toString().split(' ');
+      String dayName = getDayName(ticketData['day'].toString());
+      ticketData['formatedDate'] = "$dayName, ${dateDetails[0]}";
+
+      //MENGUBAH FORMAT EMAIL MAHASISWA MENJADI NAMA
+      if (ticketData.containsKey('studentEmail')) {
+        var studentQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('Email', isEqualTo: ticketData['studentEmail'])
+            .get();
+        if (studentQuery.docs.isNotEmpty) {
+          var studentData =
+              studentQuery.docs.first.data() as Map<String, dynamic>;
+
+          ticketData['studentName'] = studentData['Name'];
+          ticketData['studentNim'] = studentData['NIM'];
+        }
+      }
+
+      listTicketTmp.add(ticketData);
+    }
+
+    return listTicketTmp;
+  }
+
+  Future<void> fetchListTicket() async {
+    List<Map<String, dynamic>> tickets = await getListTicket();
+    // print(tickets);
+    setState(() {
+      listTicket = tickets;
+    });
+  }
+
+  //FUNGSI UNTUK MENDAPATKAN LIST HARI
+  String getDayName(String date) {
+    int weekDayNumber = DateTime.parse(date).weekday;
+    switch (weekDayNumber) {
+      case 1:
+        return "Mon";
+      case 2:
+        return "Tue";
+      case 3:
+        return "Wed";
+      case 4:
+        return "Thur";
+      case 5:
+        return "Fri";
+      case 6:
+        return "Sat";
+      case 7:
+        return "Sun";
+      default:
+        return "null";
+    }
+  }
+
+  DateTime _getSunday(DateTime date) {
+    int weekday = date.weekday;
+    if (weekday == 7) return date;
+    return date.subtract(Duration(days: weekday));
+  }
+
+  void getCurrentWeek() {
+    List<String> currentWeek = [];
+    var now = DateTime.utc(
+        DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    var sunday = _getSunday(now);
+    for (int i = 0; i < 7; i++) {
+      DateTime currentDay = sunday.add(Duration(days: i));
+      List<String> dateDetails = currentDay.toString().split(' ');
+      String dayName = getDayName(currentDay.toString());
+      currentWeek.add("$dayName, ${dateDetails[0]}");
+    }
+    setState(() {
+      dates = currentWeek;
+    });
+  }
+
+  //STATES MANAGEMENT
+  @override
+  void initState() {
+    super.initState();
+    getCurrentWeek();
+    fetchListTicket();
+  }
+
   @override
   Widget build(BuildContext context) {
+    getCurrentDosen();
+    fetchListTicket();
     return Scaffold(
       body: CustomScrollView(slivers: <Widget>[
         SliverAppBar(
@@ -69,10 +150,12 @@ class _ScheduleDosenState extends State<ScheduleDosen> {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                final data = ticketData[index];
-                return _buildTimeSlot(data["Date"], data["Tickets"]);
+                final dateData = dates[index];
+                // final data = listTicket[index];
+                // return Text(data['day']);
+                return _buildTimeSlot(dateData, listTicket);
               },
-              childCount: ticketData.length,
+              childCount: dates.length,
             ),
           ),
         ),
@@ -80,7 +163,13 @@ class _ScheduleDosenState extends State<ScheduleDosen> {
     );
   }
 
-  Widget _buildTimeSlot(String time, List<String> tickets) {
+  Widget _buildTimeSlot(String time, List<Map<String, dynamic>> tickets) {
+    late List<Map<String, dynamic>> ticketTmp = [];
+    for (var ticket in tickets) {
+      if (ticket['formatedDate'] == time) {
+        ticketTmp.add(ticket);
+      }
+    }
     return Column(
       children: [
         SizedBox(
@@ -102,15 +191,23 @@ class _ScheduleDosenState extends State<ScheduleDosen> {
         SizedBox(
           height: 19,
         ),
-        Column(
-          children:
-              tickets.map((ticket) => _buildTicket(ticket, time)).toList(),
-        ),
+        (ticketTmp.isEmpty)
+            ? Text(
+                "Tidak ada tiket untuk hari ini",
+                style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400),
+              )
+            : Column(
+                children:
+                    ticketTmp.map((ticket) => _buildTicket(ticket)).toList(),
+              ),
       ],
     );
   }
 
-  Widget _buildTicket(String ticket, String time) {
+  Widget _buildTicket(Map<String, dynamic> ticket) {
     return Container(
       width: 323,
       height: 80,
@@ -132,7 +229,7 @@ class _ScheduleDosenState extends State<ScheduleDosen> {
             width: 17,
           ),
           Text(
-            "00.00",
+            ticket['time'],
             style: TextStyle(
               fontFamily: 'Quicksand',
               fontWeight: FontWeight.bold,
@@ -155,21 +252,27 @@ class _ScheduleDosenState extends State<ScheduleDosen> {
                 height: 5,
               ),
               Text(
-                "Nama $ticket",
+                ticket['studentName'] == null
+                    ? "Tiket Masih Kosong"
+                    : ticket['studentName'],
                 style: TextStyle(
                     fontFamily: 'Quicksand',
                     fontSize: 15,
                     fontWeight: FontWeight.bold),
               ),
               Text(
-                "NIM $ticket",
+                ticket['studentNim'] == null ? "" : ticket['studentNim'],
                 style: TextStyle(
                   fontFamily: 'Quicksand',
                   fontSize: 12,
                 ),
               ),
               Text(
-                "Tujuan $ticket",
+                (ticket['purpose'] == null)
+                    ? ""
+                    : (ticket['purpose'] == "")
+                        ? "Tujuan tidak tertulis"
+                        : ticket['purpose'],
                 style: TextStyle(
                   fontFamily: 'Quicksand',
                   fontSize: 12,
@@ -179,83 +282,112 @@ class _ScheduleDosenState extends State<ScheduleDosen> {
                 height: 5,
               ),
               Row(
-                children: [
-                  SizedBox(
-                    width: 65,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return ValidateTicketDialog();
-                          });
-                    },
-                    child: Container(
-                      width: 78,
-                      height: 16,
-                      decoration: ShapeDecoration(
-                          color: Color(0xFF27374D),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5))),
-                      child: Text(
-                        "Validation",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontFamily: 'Quicksand',
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF3687E5),
-                            fontSize: 12),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 5,
-                  ),
-                  Container(
-                    width: 60,
-                    height: 16,
-                    decoration: ShapeDecoration(
-                        color: Color(0xFF27374D),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5))),
-                    child: Text(
-                      "Decline",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFF0000),
-                          fontSize: 12),
-                    ),
-                  )
-                ],
+                children: (ticket['status'] == 'Waiting for validation')
+                    ? [
+                        SizedBox(
+                          width: 65,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            ticketDoc =
+                                "${ticket['dosen']}-${ticket['day']}-${ticket['time']}";
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return ValidateTicketDialog();
+                                });
+                          },
+                          child: Container(
+                            width: 78,
+                            height: 16,
+                            decoration: ShapeDecoration(
+                                color: Color(0xFF27374D),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5))),
+                            child: Text(
+                              "Validate",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3687E5),
+                                  fontSize: 12),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            ticketCancelDoc =
+                                "${ticket['dosen']}-${ticket['day']}-${ticket['time']}";
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return CancelTicketDialog();
+                                });
+                          },
+                          child: Container(
+                            width: 60,
+                            height: 16,
+                            decoration: ShapeDecoration(
+                                color: Color(0xFF27374D),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5))),
+                            child: Text(
+                              "Cancel",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFFF0000),
+                                  fontSize: 12),
+                            ),
+                          ),
+                        )
+                      ]
+                    : (ticket['status'] == 'Validated' ||
+                            ticket['status'] == 'Cancelled')
+                        ? [
+                            SizedBox(
+                              width: 140,
+                            ),
+                            Text("${ticket['status']}",
+                                style: TextStyle(
+                                    color: ticket['status'] == 'Validated'
+                                        ? const Color(0xFF0165FC)
+                                        : const Color(0xFFFF0000),
+                                    fontFamily: 'Quicksand',
+                                    fontWeight: FontWeight.w600)),
+                          ]
+                        : [
+                            SizedBox(
+                              width: 150,
+                            ),
+                            Container(
+                              width: 60,
+                              height: 16,
+                              decoration: ShapeDecoration(
+                                  color: Color(0xFF27374D),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5))),
+                              child: Text(
+                                "Delete",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontFamily: 'Quicksand',
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFFF0000),
+                                    fontSize: 12),
+                              ),
+                            )
+                          ],
               )
             ],
           )
         ],
       ),
-    );
-  }
-
-  void _showTicketDetails(String ticket, String time) {
-    // Tampilkan detail ticket sesuai kebutuhan, misalnya menggunakan AlertDialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Detail Ticket'),
-          content: Text('Waktu: $time\nTicket: $ticket'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Tutup'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

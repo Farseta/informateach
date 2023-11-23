@@ -1,10 +1,19 @@
 // ignore_for_file: file_names, prefer_const_constructors
 
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:informateach/createTicket.dart';
 import 'package:informateach/dialog/confirmTicketDialog.dart';
 import 'package:informateach/dosen/database/db.dart';
 import 'package:informateach/main.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 Map<String, dynamic> ticket = {};
 
@@ -15,6 +24,9 @@ class ConfirmTicket extends StatefulWidget {
   State<ConfirmTicket> createState() => _ConfirmTicketState();
 }
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 class _ConfirmTicketState extends State<ConfirmTicket> {
   Map<String, dynamic> selectedDosen = {'temp': 'temp'};
   Future<void> fetchSelectedDosen() async {
@@ -22,6 +34,99 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
     setState(() {
       selectedDosen = selectedDosenTmp;
     });
+  }
+
+  Future<void> editTicket({
+    required String ticketDoc,
+    required String studentEmail,
+    String? purpose,
+  }) async {
+    try {
+      var ticketRef = await FirebaseFirestore.instance
+          .collection('tickets')
+          .doc(ticketDoc)
+          .get();
+      if (ticketRef.exists) {
+        await FirebaseFirestore.instance
+            .collection('tickets')
+            .doc(ticketDoc)
+            .update({
+          'studentEmail': studentEmail,
+          'available': false,
+          'status': 'Waiting for validation',
+          'purpose': purpose,
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> sendNotification(
+      {required String studentToken,
+      required String dosenToken,
+      required String title,
+      required String studentMessageBody,
+      required String dosenMessageBody,
+      String? action,
+      int? id}) async {
+    String serverKey =
+        'AAAAocHrxW4:APA91bERuV6OS7gveDa9iHOrOrVj6mjPOJ1sFSm4GiZW7idjht6X0M9wjCflL9BQLW8fnTeuJxQmvOaqGahwoBGA9plPIxR-I9LgS9faCbxUY4RlVYtQmUTrqqTn-rkuHrR2zxvkRH3n';
+    const url = 'https://fcm.googleapis.com/fcm/send';
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'key=$serverKey',
+    };
+
+    final studentMessage = {
+      'to': studentToken,
+      'data': {
+        'title': title,
+        'body': studentMessageBody,
+        'action': action,
+        'id': id,
+        'priority': 'high', // Prioritas tinggi
+        'click-action':
+            'FLUTTER_NOTIFICATION_CLICK', // Aksi saat notifikasi diklik
+      },
+      'android': {
+        'priority': 'high',
+      }
+    };
+
+    final dosenMessage = {
+      'to': dosenToken,
+      'data': {
+        'title': title,
+        'body': dosenMessageBody,
+        'action': action,
+        'id': id,
+        'priority': 'high',
+        'content-available': 1,
+        'click-action': 'FLUTTER_NOTIFICATION_CLICK'
+      },
+      'android': {
+        'priority': 'high',
+      }
+    };
+
+    final sendToStudent = await http.post(Uri.parse(url),
+        headers: headers, body: jsonEncode(studentMessage));
+    final sendToDosen = await http.post(Uri.parse(url),
+        headers: headers, body: jsonEncode(dosenMessage));
+
+    if (sendToStudent.statusCode == 200) {
+      print('Notifikasi untuk mahasiswa terkirim!');
+    } else {
+      print(
+          'Gagal mengirim notifikasi. Kode status: ${sendToStudent.statusCode}');
+    }
+    if (sendToDosen.statusCode == 200) {
+      print('Notifikasi untuk dosen terkirim!');
+    } else {
+      print(
+          'Gagal mengirim notifikasi. Kode status: ${sendToDosen.statusCode}');
+    }
   }
 
   @override
@@ -35,6 +140,7 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
       "Gambar": "style/img/testDosen1.png",
     };
     fetchSelectedDosen();
+    tz.initializeTimeZones();
   }
 
   @override
@@ -221,7 +327,29 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
               height: 94,
             ),
             GestureDetector(
-              onTap: () {
+              onTap: () async {
+                getCurrentUser();
+                String ticketDoc =
+                    "${selectedDosen['Email']}-$finalSelectedDay-$finalSelectedTime";
+                int notificationId = ticketDoc.hashCode;
+                // MENGUBAH DOKUMEN TIKET
+                await editTicket(
+                  ticketDoc: ticketDoc,
+                  studentEmail: currentUser['Email'],
+                  purpose: ticket['Purpose'],
+                );
+
+                // MENGIRIM NOTIFIKASI
+                sendNotification(
+                    id: notificationId,
+                    action: 'create',
+                    studentToken: currentUser['Token'],
+                    dosenToken: selectedDosen['Token'],
+                    title: "Ticket Created",
+                    studentMessageBody:
+                        "Tiket berhasil dibuat untuk ${selectedDosen['Name']}",
+                    dosenMessageBody:
+                        "Seseorang telah membuat janji dengan anda!. Ketuk untuk melihat!");
                 showDialog(
                     context: context,
                     builder: (BuildContext context) {

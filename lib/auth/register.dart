@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -25,24 +26,28 @@ class _RegisterPageState extends State<RegisterPage> {
       password: _passwordController.text.trim(),
     );
 
+    String? token = await FirebaseMessaging.instance.getToken();
+
     // Calling User Document Function
     createUser(
         _emailController.text.trim(),
         _nameController.text.trim(),
         _nimController.text.trim(),
         _phoneNumberController.text.trim(),
-        isStudent(_emailController.text.trim()));
+        isStudent(_emailController.text.trim()),
+        token!);
   }
 
   //Create User Document Function
   Future createUser(String email, String name, String nim, String phoneNumber,
-      bool role) async {
+      bool role, String token) async {
     await FirebaseFirestore.instance.collection('users').add({
       'Email': email,
       'Name': name,
       'NIM': nim,
       'Phone Number': phoneNumber,
       'Student': role,
+      'Token': token,
     });
   }
 
