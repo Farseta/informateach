@@ -339,11 +339,11 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
                     "${selectedDosen['Email']}-$finalSelectedDay-$finalSelectedTime";
                 int notificationId = ticketDoc.hashCode;
                 // MENGUBAH DOKUMEN TIKET
-                await editTicket(
-                  ticketDoc: ticketDoc,
-                  studentEmail: currentUser['Email'],
-                  purpose: ticket['Purpose'],
-                );
+                // await editTicket(
+                //   ticketDoc: ticketDoc,
+                //   studentEmail: currentUser['Email'],
+                //   purpose: ticket['Purpose'],
+                // );
 
                 // MENGIRIM NOTIFIKASI
                 sendNotification(

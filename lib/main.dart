@@ -112,14 +112,14 @@ Future<void> scheduleNotification({
     DateTime formatedDate = DateTime.parse(dayOnly[0] + ' ' + hour!);
     DateTime fixDate = formatedDate.subtract(Duration(hours: 1));
     var scheduledTime = tz.TZDateTime.from(fixDate, tz.local);
-    // var time =
-    //     tz.TZDateTime.from(DateTime.now().add(Duration(seconds: 5)), tz.local);
+    var time =
+        tz.TZDateTime.from(DateTime.now().add(Duration(seconds: 5)), tz.local);
     //CREATE SCHEDULED NOTIFICATION
     await flutterLocalNotificationsPlugin.zonedSchedule(
       id,
       'Scheduled Notif',
       'Anda memiliki pertemuan 1 jam lagi. Ketuk untuk melihat lebih lanjut',
-      scheduledTime,
+      time,
       platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
