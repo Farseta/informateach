@@ -26,16 +26,6 @@ import 'package:timezone/timezone.dart' as tz;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-Map userNow = {
-  "Gambar": "style/img/testUser/png",
-  "Nama": "Christiano Zetro AB Sinaga",
-  "NIM": "21051204033",
-  "Phone": "123456789123",
-  "Gender": "Pria",
-  // ignore: equal_keys_in_map
-  "Gambar": _image,
-};
-
 Uint8List? _image;
 // late bool showBottomNavBar;
 late bool showBottomNavBar;
@@ -79,43 +69,68 @@ Future<bool> editCurrentUserProfile(
   }
 }
 
-Future<void> scheduleNotification(
-    {required String title,
-    required String body,
-    required int id,
-    required String action}) async {
+Future<void> _checkPendingNotificationRequests() async {
+  final List<PendingNotificationRequest> pendingNotificationRequests =
+      await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+  print('${pendingNotificationRequests.length} pending notification ');
+
+  for (PendingNotificationRequest pendingNotificationRequest
+      in pendingNotificationRequests) {
+    print(pendingNotificationRequest.id.toString() +
+        " " +
+        (pendingNotificationRequest.payload ?? ""));
+  }
+  print('NOW ' + tz.TZDateTime.now(tz.local).toString());
+}
+
+Future<void> cancellAllNotif() async {
+  await flutterLocalNotificationsPlugin.cancelAll();
+}
+
+Future<void> scheduleNotification({
+  required String title,
+  required String body,
+  required int id,
+  required String action,
+  String? day,
+  String? hour,
+}) async {
   //KONFIGURASI NOTIFIKASI
   const AndroidNotificationDetails androidPlatformChannelSpecifics =
       AndroidNotificationDetails(
     'tiket_2',
     'schedule_tiket',
-    importance: Importance.max,
-    priority: Priority.max,
+    importance: Importance.high,
+    priority: Priority.low,
   );
-
   tz.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
   const NotificationDetails platformChannelSpecifics =
       NotificationDetails(android: androidPlatformChannelSpecifics);
   if (action == 'create') {
-    //MEMBUAT NOTIFIKASI TERJADWAL
+    List<String> dayOnly = day!.split(' ');
+    DateTime formatedDate = DateTime.parse(dayOnly[0] + ' ' + hour!);
+    DateTime fixDate = formatedDate.subtract(Duration(hours: 1));
+    var scheduledTime = tz.TZDateTime.from(fixDate, tz.local);
+    // var time =
+    //     tz.TZDateTime.from(DateTime.now().add(Duration(seconds: 5)), tz.local);
+    //CREATE SCHEDULED NOTIFICATION
     await flutterLocalNotificationsPlugin.zonedSchedule(
       id,
-      title,
-      body,
-      tz.TZDateTime.from(DateTime.now().add(Duration(minutes: 1)), tz.local),
+      'Scheduled Notif',
+      'Anda memiliki pertemuan 1 jam lagi. Ketuk untuk melihat lebih lanjut',
+      scheduledTime,
       platformChannelSpecifics,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      payload: 'scheduled_notification',
-      matchDateTimeComponents: DateTimeComponents.time,
+      payload: '$scheduledTime',
     );
-    print("Schedule Notif Terbuat");
+    print("Scheduled Notif Created");
   } else if (action == 'cancel') {
-    //MEMBATALKAN NOTIFIKASI TERJADWAL
+    //CANCEL SCHEDULED NOTIFICATION
     await flutterLocalNotificationsPlugin.cancel(id);
-    print("Notifikasi terbatalkan");
+    print("Notification cancelled");
   }
 }
 
@@ -146,7 +161,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     title: message.data['title'] ?? 'Default Title',
     body: message.data['body'] ?? 'Default Body',
     id: int.tryParse(message.data['id'] ?? '0') ?? 0,
-    action: message.data['action'] ?? 'cancel',
+    action: message.data['action'] ?? 'action',
+    day: message.data['day'] ?? 'Default Day',
+    hour: message.data['time'] ?? 'Default Time',
   );
   // Menampilkan notifikasi lokal
   showNotification(
@@ -154,6 +171,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     message.data['body'] ?? 'Notification Body',
     int.tryParse(message.data['id'] ?? '0') ?? 0,
   );
+
+  _checkPendingNotificationRequests();
 }
 
 Future<void> main() async {
@@ -180,12 +199,15 @@ Future<void> main() async {
       body: message.data['body'] ?? 'Default Body',
       id: int.tryParse(message.data['id'] ?? '0') ?? 0,
       action: message.data['action'] ?? 'create',
+      day: message.data['day'] ?? 'Default Day',
+      hour: message.data['time'] ?? 'Default Time',
     );
     showNotification(
       message.data['title'] ?? 'Notification Title',
       message.data['body'] ?? 'Notification Body',
       int.tryParse(message.data['id'] ?? '0') ?? 0,
     );
+    _checkPendingNotificationRequests();
   });
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     // Handling when the app is opened from a terminated state
@@ -196,6 +218,8 @@ Future<void> main() async {
       message.notification?.body ?? 'Notification Body',
       int.tryParse(message.data['id'] ?? '0') ?? 0,
     );
+
+    _checkPendingNotificationRequests();
   });
 
   //BACKGROUND SITUATION
@@ -1723,8 +1747,8 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                             // Handle error loading image
                             return Image.asset(
                               'style/img/DefaultIcon.png',
-                              width: 101,
-                              height: 138,
+                              width: 80,
+                              height: 112,
                               fit: BoxFit.cover,
                             );
                           },
@@ -1831,8 +1855,8 @@ class _TicketMahasiswaPageState extends State<TicketMahasiswaPage> {
                         errorBuilder: (context, error, stackTrace) {
                           return Image.asset(
                             'style/img/DefaultIcon.png',
-                            width: 101,
-                            height: 138,
+                            width: 80,
+                            height: 112,
                             fit: BoxFit.cover,
                           );
                         },
@@ -2120,8 +2144,8 @@ class _HistoryTicketPageState extends State<HistoryTicketPage> {
                             //HANDLE ERROR IMAGE
                             return Image.asset(
                               'style/img/DefaultIcon.png',
-                              width: 101,
-                              height: 138,
+                              width: 80,
+                              height: 112,
                               fit: BoxFit.cover,
                             );
                           },
@@ -2215,8 +2239,8 @@ class _HistoryTicketPageState extends State<HistoryTicketPage> {
                           //HANDLE ERROR IMAGE LOAD
                           return Image.asset(
                             'style/img/DefaultIcon.png',
-                            width: 101,
-                            height: 138,
+                            width: 80,
+                            height: 112,
                             fit: BoxFit.cover,
                           );
                         },

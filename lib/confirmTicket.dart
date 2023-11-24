@@ -68,6 +68,8 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
       required String title,
       required String studentMessageBody,
       required String dosenMessageBody,
+      String? day,
+      String? time,
       String? action,
       int? id}) async {
     String serverKey =
@@ -85,6 +87,8 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
         'body': studentMessageBody,
         'action': action,
         'id': id,
+        'day': day,
+        'time': time,
         'priority': 'high', // Prioritas tinggi
         'click-action':
             'FLUTTER_NOTIFICATION_CLICK', // Aksi saat notifikasi diklik
@@ -101,6 +105,8 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
         'body': dosenMessageBody,
         'action': action,
         'id': id,
+        'day': day,
+        'time': time,
         'priority': 'high',
         'content-available': 1,
         'click-action': 'FLUTTER_NOTIFICATION_CLICK'
@@ -346,6 +352,8 @@ class _ConfirmTicketState extends State<ConfirmTicket> {
                     studentToken: currentUser['Token'],
                     dosenToken: selectedDosen['Token'],
                     title: "Ticket Created",
+                    day: finalSelectedDay,
+                    time: finalSelectedTime,
                     studentMessageBody:
                         "Tiket berhasil dibuat untuk ${selectedDosen['Name']}",
                     dosenMessageBody:
